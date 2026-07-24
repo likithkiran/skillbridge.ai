@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillBridge AI — Ultimate Major Project Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Client-side parsing libraries -->
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<style>
+  :root {
+    --bg: #030509;
+    --panel: #0A0E17;
+    --panel-alt: #111726;
+    --border: #1B2436;
+    --text: #F0F4FF;
+    --muted: #64748B;
+    --gold: #FFC857;
+    --gold-glow: rgba(255, 200, 87, 0.35);
+    --mint: #3ECF8E;
+    --mint-glow: rgba(62, 207, 142, 0.35);
+    --coral: #FF5370;
+    --indigo: #6C8CFF;
+    --indigo-glow: rgba(108, 140, 255, 0.35);
+    --cyan: #00F2FE;
+    --cyan-glow: rgba(0, 242, 254, 0.4);
+    --purple: #9D4EDD;
+    --purple-glow: rgba(157, 78, 221, 0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  #bg-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .pixel-font { font-family: 'Press Start 2P', monospace; }
+
+  /* Cyber Glass Cards */
+  .glass-card {
+    background: rgba(10, 14, 23, 0.9);
+    backdrop-filter: blur(18px);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+  }
+  .glass-card:hover {
+    border-color: var(--cyan);
+    box-shadow: 0 0 25px var(--cyan-glow);
+  }
+
+  .glow-cyan { text-shadow: 0 0 12px var(--cyan-glow); }
+  .glow-gold { text-shadow: 0 0 12px var(--gold-glow); }
+
+  /* Buttons */
+  .btn {
+    padding: 12px 20px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .btn:hover { filter: brightness(1.25); transform: translateY(-2px); }
+  .btn:active { transform: translateY(1px); }
+  .btn-gold { color: #000; background: var(--gold); box-shadow: 0 0 15px var(--gold-glow); }
+  .btn-mint { color: #000; background: var(--mint); box-shadow: 0 0 15px var(--mint-glow); }
+  .btn-indigo { color: #fff; background: var(--indigo); box-shadow: 0 0 15px var(--indigo-glow); }
+  .btn-cyan { color: #000; background: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow); }
+  .btn-purple { color: #fff; background: var(--purple); box-shadow: 0 0 15px var(--purple-glow); }
+  .btn-outline { background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--cyan); color: var(--cyan); }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(1); transform: none !important; box-shadow: none !important; }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 2; }
+  
+  /* Navigation */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; font-weight: 700; font-size: 20px; }
+  .brand-badge { padding: 6px 10px; background: var(--gold); color: #000; font-size: 10px; border-radius: 4px; box-shadow: 0 0 12px var(--gold-glow); }
+
+  /* Auth UI */
+  .auth-container { 
+    max-width: 480px; 
+    margin: 50px auto; 
+    padding: 40px; 
+    border: 1px solid var(--cyan); 
+    box-shadow: 0 0 35px var(--cyan-glow);
+    background: radial-gradient(circle at top, rgba(0,242,254,0.08) 0%, rgba(10,14,23,0.95) 70%);
+  }
+  .auth-tabs { display: flex; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .auth-tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--muted); background: none; border: none; font-weight: 700; font-size: 12px; letter-spacing: 1px; }
+  .auth-tab.active { color: var(--cyan); border-bottom: 2px solid var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
+  .form-group { margin-bottom: 22px; }
+  .form-group label { display: block; font-size: 11px; color: var(--cyan); margin-bottom: 8px; letter-spacing: 1.5px; }
+  .form-group input { width: 100%; padding: 14px; background: var(--panel-alt); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .form-group input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow); }
+  .sec-meter { height: 5px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+  .sec-fill { height: 100%; width: 0%; background: var(--coral); transition: all 0.3s ease; }
+
+  /* Hero & Roles */
+  .hero { text-align: center; padding: 20px 0 36px; }
+  .hero h1 { font-size: 44px; margin-bottom: 12px; font-weight: 700; }
+  .hero p { color: var(--muted); max-width: 680px; margin: 0 auto; font-size: 15px; line-height: 1.6; }
+
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 24px; margin-bottom: 60px; }
+  .role-card { padding: 28px; cursor: pointer; position: relative; overflow: hidden; }
+  .role-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border); transition: 0.3s; }
+  .role-card:hover::before { background: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow); }
+  .role-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .role-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+  .role-tagline { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* Upload Zone & Live ATS Meter */
+  .upload-zone { padding: 36px; text-align: center; border: 2px dashed var(--border); border-radius: 12px; cursor: pointer; position: relative; margin-bottom: 24px; background: rgba(20, 26, 38, 0.4); }
+  .upload-zone:hover { border-color: var(--cyan); background: rgba(0,242,254,0.03); }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 30px; }
+  .chip { padding: 8px 16px; background: var(--panel-alt); border: 1px solid var(--border); border-radius: 20px; cursor: pointer; font-size: 12px; color: var(--muted); transition: all 0.2s; }
+  .chip.on { border-color: var(--mint); color: var(--mint); background: rgba(62,207,142,0.12); box-shadow: 0 0 12px var(--mint-glow); }
+
+  /* Dashboard HUD & Visual Radar */
+  .hud { display: grid; grid-template-columns: auto 1fr auto; gap: 28px; align-items: center; padding: 28px; margin-bottom: 32px; border: 1px solid rgba(0,242,254,0.25); }
+  .level-badge { width: 68px; height: 68px; background: var(--gold); color: #000; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; border-radius: 8px; box-shadow: 0 0 20px var(--gold-glow); }
+  .xp-track { height: 12px; background: var(--bg); border-radius: 6px; overflow: hidden; margin-top: 8px; border: 1px solid var(--border); }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--cyan)); transition: width 0.5s ease; }
+
+  .dash-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+  .skill-node { margin-bottom: 18px; }
+  .node-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+  .node-header:hover { border-color: var(--indigo); background: var(--panel-alt); }
+  
+  .resource-panel { padding: 24px; background: var(--panel-alt); border: 1px solid var(--border); border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+  .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; margin: 16px 0; border-radius: 8px; border: 1px solid var(--border); background: #000; }
+  .video-container iframe { position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0; }
+
+  .channel-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; padding: 4px 10px; background: rgba(255,83,112,0.15); border: 1px solid var(--coral); color: var(--coral); border-radius: 4px; font-weight: bold; margin-bottom: 10px; }
+
+  /* Notes & Architecture Diagrams */
+  .notes-box { margin-top: 20px; padding: 22px; background: rgba(5, 8, 15, 0.95); border: 1px solid var(--border); border-left: 4px solid var(--cyan); border-radius: 8px; }
+  .notes-box h4 { font-size: 14px; color: var(--cyan); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .notes-section { margin-bottom: 12px; }
+  .notes-section-title { font-size: 12px; font-weight: bold; color: var(--gold); margin-bottom: 4px; text-transform: uppercase; }
+  .notes-content { font-size: 13px; color: var(--text); line-height: 1.7; }
+  .arch-diagram { margin-top: 10px; padding: 12px; background: #020408; border: 1px dashed var(--cyan); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); overflow-x: auto; white-space: pre; }
+  .code-block { margin-top: 10px; padding: 14px; background: #020306; border: 1px solid var(--border); border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--mint); overflow-x: auto; white-space: pre; }
+
+  .doc-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+  .doc-btn { padding: 8px 14px; background: rgba(108,140,255,0.12); border: 1px solid var(--indigo); border-radius: 6px; color: var(--text); text-decoration: none; font-size: 11px; font-weight: 600; transition: all 0.2s; }
+  .doc-btn:hover { background: var(--indigo); color: #fff; transform: translateY(-2px); }
+
+  /* Sequential Viva Box */
+  .viva-box { margin-top: 24px; padding: 22px; background: rgba(3, 5, 10, 0.85); border: 1px dashed var(--indigo); border-radius: 8px; }
+  .viva-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .viva-tag { font-size: 10px; padding: 3px 8px; background: rgba(0,242,254,0.15); border: 1px solid var(--cyan); color: var(--cyan); border-radius: 4px; font-weight: bold; }
+  .viva-progress { font-size: 11px; color: var(--gold); font-weight: bold; }
+  .viva-option { display: block; width: 100%; text-align: left; padding: 12px 16px; margin: 8px 0; background: var(--panel); border: 1px solid var(--border); color: var(--text); border-radius: 6px; cursor: pointer; font-size: 13px; transition: all 0.15s; }
+  .viva-option:hover { border-color: var(--cyan); background: rgba(0,242,254,0.06); }
+  .viva-explanation { margin-top: 14px; padding: 14px; background: rgba(62,207,142,0.1); border-left: 3px solid var(--mint); font-size: 13px; line-height: 1.6; color: var(--text); }
+
+  /* Certificate Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(14px); z-index: 3000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .cert-container { width: 100%; max-width: 820px; background: #070a12; border: 4px double var(--gold); padding: 44px; border-radius: 12px; text-align: center; position: relative; box-shadow: 0 0 60px var(--gold-glow); }
+  .cert-title { font-family: 'Cinzel', serif; font-size: 34px; color: var(--gold); letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
+  .cert-sub { font-size: 13px; color: var(--muted); margin-bottom: 28px; letter-spacing: 1px; }
+  .cert-name-input { background: transparent; border: none; border-bottom: 2px solid var(--gold); font-size: 28px; font-weight: 700; color: var(--cyan); text-align: center; width: 85%; padding: 6px; font-family: 'Space Grotesk', sans-serif; margin-bottom: 16px; outline: none; }
+  .cert-name-input:focus { border-color: var(--cyan); box-shadow: 0 4px 12px var(--cyan-glow); }
+  .cert-body { font-size: 15px; color: var(--text); max-width: 620px; margin: 0 auto 32px; line-height: 1.6; }
+  .cert-seal { width: 84px; height: 84px; margin: 0 auto 20px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #000; font-weight: bold; font-size: 28px; box-shadow: 0 0 25px var(--gold-glow); }
+
+  /* Live Terminal Logs Drawer */
+  .term-drawer { margin-top: 30px; padding: 16px; background: #020306; border: 1px solid var(--border); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); height: 110px; overflow-y: auto; }
+  .term-line { margin-bottom: 4px; }
+  .term-line.info { color: var(--cyan); }
+  .term-line.success { color: var(--mint); }
+
+  /* AI Assistant Drawer */
+  .ai-drawer { position: fixed; bottom: 20px; right: 20px; width: 440px; height: 580px; z-index: 1000; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--purple); box-shadow: 0 0 30px rgba(157, 78, 221, 0.35); }
+  .ai-header { padding: 16px 20px; background: var(--panel-alt); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .ai-messages { flex: 1; padding: 18px; overflow-y: auto; font-size: 13px; line-height: 1.6; display: flex; flex-direction: column; gap: 14px; }
+  .msg-ai { background: rgba(157, 78, 221, 0.12); border: 1px solid var(--purple); padding: 14px; border-radius: 8px; color: var(--text); max-width: 90%; align-self: flex-start; }
+  .msg-ai strong { color: var(--gold); }
+  .msg-ai ul { padding-left: 18px; margin-top: 6px; }
+  .msg-ai code { color: var(--mint); background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; }
+  .msg-user { background: rgba(0, 242, 254, 0.12); border: 1px solid var(--cyan); padding: 12px 16px; border-radius: 8px; align-self: flex-end; color: var(--text); max-width: 88%; }
+  .ai-input-area { display: flex; padding: 14px; background: var(--panel); border-top: 1px solid var(--border); }
+  .ai-input-area input { flex: 1; padding: 12px; background: var(--panel-alt); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 13px; outline: none; }
+
+  /* Toast Notifications */
+  .toast { position: fixed; top: 20px; right: 20px; padding: 14px 24px; background: var(--cyan); color: #000; font-weight: bold; border-radius: 6px; z-index: 2000; box-shadow: 0 0 20px var(--cyan-glow); animation: slideDown 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+  @keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  @media print {
+    body * { visibility: hidden; }
+    .cert-container, .cert-container * { visibility: visible; }
+    .cert-container { position: absolute; left: 0; top: 0; width: 100%; border: 4px solid #000; color: #000; background: #fff !important; }
+    .cert-title { color: #000 !important; }
+    .cert-name-input { color: #000 !important; border-color: #000 !important; }
+    .no-print { display: none !important; }
+  }
+
+  @media (max-width: 868px) {
+    .dash-grid { grid-template-columns: 1fr; }
+    .hud { grid-template-columns: 1fr; text-align: center; }
+    .level-badge { margin: 0 auto; }
+    .ai-drawer { width: calc(100% - 32px); right: 16px; height: 500px; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+  <header class="navbar">
+    <div class="brand">
+      <span class="brand-badge pixel-font">SB-v10.0</span>
+      <span class="glow-cyan">SkillBridge AI</span>
+    </div>
+    <div id="user-nav"></div>
+  </header>
+
+  <div id="app"></div>
+
+  <!-- Live Terminal Log Streamer -->
+  <div class="term-drawer glass-card" id="term-logs">
+    <div class="term-line info">[INIT] SkillBridge AI v10.0 Engine loaded with expanded track mappings.</div>
+    <div class="term-line">[SYS] Intelligent AI Bot & Verification Gate operational...</div>
+  </div>
+</div>
+
+<!-- Editable Unified Certificate Modal -->
+<div id="cert-modal" class="modal-overlay" style="display:none;">
+  <div class="cert-container" id="cert-printable">
+    <div class="cert-seal">🏅</div>
+    <div class="cert-title">Unified Track Certificate</div>
+    <div class="cert-sub mono">SKILLBRIDGE AI — MASTER ENGINEERING COMPETENCY</div>
+    <div style="font-size:14px; color:var(--muted); margin-bottom:8px;">This official major project document certifies that</div>
+    
+    <!-- Editable Full Legal Name Input -->
+    <input type="text" id="cert-user-name-input" class="cert-name-input" value="STUDENT DEVELOPER" placeholder="Type Your Full Legal Name" oninput="saveCertName(this.value)" />
+    
+    <div class="cert-body">
+      has successfully completed 100% of all required modules, passed all sequential scenario viva examinations, and achieved verified mastery for:
+      <br><br>
+      <strong id="cert-role-title" style="color:var(--cyan); font-size:20px;">Full-Stack Web Architect Track</strong>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:30px; font-size:12px;" class="mono">
+      <div>
+        <div style="color:var(--muted);">VERIFICATION ID</div>
+        <div id="cert-id" style="color:var(--gold);">SB-MASTER-9921</div>
+      </div>
+      <div>
+        <div style="color:var(--muted);">DATE OF ISSUANCE</div>
+        <div id="cert-date" style="color:var(--mint);">July 2026</div>
+      </div>
+    </div>
+    <div style="margin-top:32px; display:flex; gap:12px; justify-content:center;" class="no-print">
+      <button class="btn btn-gold" onclick="window.print()">🖨 Print / Save PDF</button>
+      <button class="btn btn-outline" onclick="closeCertModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Smart AI Mentor Drawer -->
+<div id="ai-chat" class="ai-drawer glass-card" style="display:none;">
+  <div class="ai-header">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:16px;">🤖</span>
+      <span class="mono pixel-font" style="font-size:11px; color:var(--purple);">SMART AI MENTOR</span>
+    </div>
+    <button onclick="toggleAiBot()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;">✕</button>
+  </div>
+  <div class="ai-messages mono" id="ai-msg-container">
+    <div class="msg-ai">Greetings! I am your AI Technical Mentor. Ask me any question regarding code, concepts, or viva prep!</div>
+  </div>
+  <div class="ai-input-area">
+    <input type="text" id="ai-user-input" class="mono" placeholder="Ask AI a question..." onkeydown="if(event.key==='Enter') sendAiMessage()" />
+    <button class="btn btn-purple" style="padding:8px 14px; margin-left:8px;" onclick="sendAiMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+/* ---------------- BACKGROUND CANVAS ---------------- */
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let particles = [];
+
+function resizeBg() {
+  bgCanvas.width = window.innerWidth;
+  bgCanvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeBg);
+resizeBg();
+
+for(let i = 0; i < 45; i++) {
+  particles.push({
+    x: Math.random() * bgCanvas.width,
+    y: Math.random() * bgCanvas.height,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    radius: Math.random() * 2 + 1
+  });
+}
+
+function animateBg() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  bgCtx.fillStyle = 'rgba(0, 242, 254, 0.25)';
+  bgCtx.strokeStyle = 'rgba(108, 140, 255, 0.08)';
+
+  particles.forEach((p, idx) => {
+    p.x += p.vx; p.y += p.vy;
+    if(p.x < 0 || p.x > bgCanvas.width) p.vx *= -1;
+    if(p.y < 0 || p.y > bgCanvas.height) p.vy *= -1;
+
+    bgCtx.beginPath();
+    bgCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    bgCtx.fill();
+
+    for(let j = idx + 1; j < particles.length; j++) {
+      const p2 = particles[j];
+      const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+      if(dist < 120) {
+        bgCtx.beginPath();
+        bgCtx.moveTo(p.x, p.y);
+        bgCtx.lineTo(p2.x, p2.y);
+        bgCtx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(animateBg);
+}
+animateBg();
+
+/* ---------------- TERMINAL LOG STREAMER ---------------- */
+function addTermLog(msg, type = '') {
+  const term = document.getElementById('term-logs');
+  if(!term) return;
+  const line = document.createElement('div');
+  line.className = `term-line ${type}`;
+  line.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  term.appendChild(line);
+  term.scrollTop = term.scrollHeight;
+}
+
+/* ---------------- AUDIO SYNTHESIZER ---------------- */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playBeep(type) {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  if (type === 'success') {
+    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.2);
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+  } else if (type === 'error') {
+    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(110, audioCtx.currentTime + 0.25);
+    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+    osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+  }
+}
+
+// PDF Worker Setup
+if (window.pdfjsLib) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+}
+
+/* ---------------- TRACKS, UNIQUE YT EMBEDS & VIVAS ---------------- */
+const ROLES = [
+  { id: 'fullstack', name: 'Full-Stack Web Architect', tagline: 'Build high-scale web applications from modern frontend interfaces to backend API clusters', skills: ['HTML & CSS', 'JavaScript', 'React', 'TypeScript', 'Node.js & Express', 'SQL & Databases'] },
+  { id: 'backend', name: 'Backend Systems Engineer', tagline: 'Architect high-throughput microservices, database transactions, and secure REST APIs', skills: ['Node.js & Express', 'SQL & Databases', 'REST API Design', 'Auth & Security', 'Docker & Deployment', 'System Architecture'] },
+  { id: 'ai', name: 'AI & Generative Engineering', tagline: 'Develop AI agents, fine-tune neural networks, and deploy enterprise RAG pipelines', skills: ['Python', 'Machine Learning', 'Deep Learning (PyTorch)', 'LLMs & RAG', 'AI Agent Frameworks', 'Vector Databases'] },
+  { id: 'cloud', name: 'Cloud Infrastructure & DevOps', tagline: 'Master multi-cloud Kubernetes orchestration, Docker pipelines, and Terraform IaC', skills: ['Docker & Deployment', 'Kubernetes', 'AWS Infrastructure', 'Linux Admin', 'Terraform (IaC)', 'DevSecOps Pipelines'] },
+  { id: 'cyber', name: 'Cybersecurity & Ethical Hacking', tagline: 'Conduct penetration testing, neutralize vulnerabilities, and manage SOC security tools', skills: ['Network Security & Pen Testing', 'Cryptography & Identity', 'Auth & Security', 'Linux Admin', 'REST API Design'] },
+  { id: 'mobile', name: 'Mobile App Engineering (React Native & Flutter)', tagline: 'Engineer high-performance mobile apps across iOS & Android using native bridges and state machines', skills: ['JavaScript', 'React Native & Mobile UI', 'TypeScript', 'REST API Design', 'Cross-Platform State & APIs'] }
+];
+
+// Unique Video IDs for EVERY Topic
+const SKILL_DETAILS = {
+  'HTML & CSS': {
+    ytChannel: 'Kevin Powell',
+    yt: 'pQN-pnXPaVg',
+    notes: {
+      concept: 'HTML provides semantic DOM nodes while CSS manages visual rendering using Flexbox and Grid layout engines.',
+      mechanics: 'The CSS Box Model calculates outer bounds: Total Width = width + padding + border. box-sizing: border-box prevents padding layout overflows.',
+      bestPractice: 'Enforce CSS variables (--primary-color) and semantic markup (<main>, <article>) for optimal SEO and accessibility.'
+    },
+    diagram: `[HTML Markup] -> [CSSOM Calculation] -> [Box Model Render]`,
+    snippet: `/* Reset to border-box model */\n*, *::before, *::after {\n  box-sizing: border-box;\n  margin: 0; padding: 0;\n}`,
+    docs: [{ name: "MDN: CSS Box Model", url: "https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model" }],
+    vivas: [
+      { q: 'Q1: How does CSS box-sizing: border-box alter element layout when padding is added?', options: ['Includes padding inside specified width', 'Pushes outer elements away', 'Resets border margins', 'Converts element to inline-block'], ans: 0, exp: 'border-box forces padding and borders to be calculated inside the specified width.' },
+      { q: 'Q2: Which CSS property aligns flex items along the cross-axis?', options: ['justify-content', 'align-items', 'flex-direction', 'align-self'], ans: 1, exp: 'align-items aligns items along the cross-axis.' }
+    ]
+  },
+  'JavaScript': {
+    ytChannel: 'Web Dev Simplified',
+    yt: 'W6NZfCO5SIk',
+    notes: {
+      concept: 'JavaScript is a single-threaded, non-blocking asynchronous language running on V8 with an event loop architecture.',
+      mechanics: 'Event Delegation leverages Event Bubbling to manage events on multiple child nodes via a single parent listener.',
+      bestPractice: 'Use Promise.all() for concurrent network requests and avoid var in favor of const and let.'
+    },
+    diagram: `[Call Stack] -> [Web APIs] -> [Microtasks (Promises)] -> [Macrotasks]`,
+    snippet: `async function fetchBatch(urls) {\n  const reqs = urls.map(url => fetch(url));\n  return Promise.all(reqs);\n}`,
+    docs: [{ name: "MDN: JS Event Loop", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }],
+    vivas: [
+      { q: 'Q1: What executes first after the Call Stack empties?', options: ['Macrotasks (setTimeout)', 'Microtasks (Promises)', 'DOM Paint', 'Idle Callback'], ans: 1, exp: 'Microtasks are completely drained before any macrotask runs.' },
+      { q: 'Q2: What is the primary benefit of Event Delegation?', options: ['Attaches one listener to a parent', 'Disables browser repaints', 'Speeds up JSON serialization', 'Aborts fetch calls'], ans: 0, exp: 'Event delegation allows handling events for dynamic child nodes cleanly at the parent level.' }
+    ]
+  },
+  'React': {
+    ytChannel: 'Bro Code',
+    yt: 'CgkZ7MvWUAA',
+    notes: {
+      concept: 'React builds declarative UIs via Virtual DOM diffing to calculate minimal patch updates for the real browser DOM.',
+      mechanics: 'The useEffect hook manages side effects. Passing [] guarantees execution runs only once on component mount.',
+      bestPractice: 'Wrap expensive derived values in useMemo and child callbacks in useCallback to avoid re-renders.'
+    },
+    diagram: `[State Change] -> [Virtual DOM Diff] -> [Minimal Browser Patch]`,
+    snippet: `import React, { useState, useEffect } from 'react';\n\nexport function Component() {\n  const [count, setCount] = useState(0);\n  useEffect(() => { console.log('Mounted'); }, []);\n  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;\n}`,
+    docs: [{ name: "React Docs: Hooks", url: "https://react.dev/reference/react/hooks" }],
+    vivas: [
+      { q: 'Q1: What happens if state is mutated directly (state.count = 5)?', options: ['React throws an error', 'Component fails to re-render', 'State leaks to siblings', 'Virtual DOM breaks'], ans: 1, exp: 'Direct mutation skips setter notifications, so React diffing does not trigger a re-render.' },
+      { q: 'Q2: When does useEffect run if given an empty dependency array []?', options: ['Every render', 'Once on initial mount', 'Whenever state changes', 'Before DOM paint'], ans: 1, exp: 'An empty array restricts the effect to running once after initial mount.' }
+    ]
+  },
+  'TypeScript': {
+    ytChannel: 'Fireship',
+    yt: 'zQnBQ4tjiEY',
+    notes: {
+      concept: 'TypeScript adds optional static typing to JS to catch structural errors during compile-time.',
+      mechanics: 'The unknown type forces type narrowing (typeof, instanceof) before property access, unlike any.',
+      bestPractice: 'Enable strict: true in tsconfig.json and define explicit interfaces for API contracts.'
+    },
+    diagram: `[TS File] -> [tsc Type Checker] -> [Clean JS Output]`,
+    snippet: `function parse(val: unknown): string {\n  if (typeof val === 'string') return val.trim().toUpperCase();\n  throw new Error("Invalid string");\n}`,
+    docs: [{ name: "TypeScript Handbook", url: "https://www.typescriptlang.org/docs/" }],
+    vivas: [
+      { q: 'Q1: What safety check does "unknown" enforce compared to "any"?', options: ['Allows arbitrary method calls', 'Requires explicit type narrowing before usage', 'Compiles strictly to string', 'Disables compiler checks'], ans: 1, exp: 'unknown requires type narrowing before performing operations on the variable.' }
+    ]
+  },
+  'Node.js & Express': {
+    ytChannel: 'Dave Gray',
+    yt: 'fBNz5xF-Kx4',
+    notes: {
+      concept: 'Node.js is an async event-driven runtime using Google V8 and libuv for backend microservices.',
+      mechanics: 'Express middleware functions form an execution pipeline taking (req, res, next) arguments.',
+      bestPractice: 'Use centralized error-handling middleware and avoid blocking the single-threaded event loop.'
+    },
+    diagram: `[Request] -> [Middleware 1] -> [Middleware 2] -> [Route Handler] -> [Response]`,
+    snippet: `const express = require('express');\nconst app = express();\napp.use(express.json());\napp.get('/health', (req, res) => res.json({ status: 'ok' }));`,
+    docs: [{ name: "Node.js Guide", url: "https://nodejs.org/en/docs/" }],
+    vivas: [
+      { q: 'Q1: What is the primary role of Express middleware?', options: ['Compiles JS to machine code', 'Inspects and modifies incoming HTTP requests', 'Creates SQL tables', 'Renders client DOM'], ans: 1, exp: 'Middleware functions inspect, process, or modify incoming request objects.' }
+    ]
+  },
+  'SQL & Databases': {
+    ytChannel: 'freeCodeCamp',
+    yt: 'HXV3zeQKqGY',
+    notes: {
+      concept: 'Relational databases store normalized data enforcing strict ACID transaction guarantees.',
+      mechanics: 'B-Tree indexing speeds up SELECT queries from O(N) full scans to O(log N) logarithmic lookups.',
+      bestPractice: 'Always use parameterized SQL queries to neutralize SQL Injection vulnerabilities.'
+    },
+    diagram: `[SQL Query] -> [Query Planner] -> [B-Tree Index Lookup] -> [Data Rows]`,
+    snippet: `-- Parameterized Query Pattern\nSELECT id, name FROM users WHERE status = 'active' AND role = $1;`,
+    docs: [{ name: "PostgreSQL Docs", url: "https://www.postgresql.org/docs/" }],
+    vivas: [
+      { q: 'Q1: Which clause filters aggregate groups after a GROUP BY statement?', options: ['WHERE', 'HAVING', 'FILTER', 'ORDER BY'], ans: 1, exp: 'HAVING filters aggregate summary records generated after GROUP BY.' }
+    ]
+  },
+  'Python': {
+    ytChannel: 'Programming with Mosh',
+    yt: 'kqtD7dUpMdo',
+    notes: {
+      concept: 'Python is a high-level interpreted language renowned for clean syntax, dynamic typing, and massive AI ecosystems.',
+      mechanics: 'Memory management is handled via reference counting and automatic generational garbage collection.',
+      bestPractice: 'Use virtual environments (venv) and type hinting to build maintainable applications.'
+    },
+    diagram: `[Python Code (.py)] -> [Bytecode (.pyc)] -> [PVM Interpreter]`,
+    snippet: `def process_records(items: list[str]) -> dict[str, int]:\n    return {item: len(item) for item in items if item}`,
+    docs: [{ name: "Python Official Docs", url: "https://docs.python.org/3/" }],
+    vivas: [
+      { q: 'Q1: What property distinguishes Python tuples from lists?', options: ['Tuples are mutable', 'Tuples are immutable', 'Tuples store floats only', 'Tuples do not support indexing'], ans: 1, exp: 'Tuples cannot be modified after creation.' }
+    ]
+  },
+  'Machine Learning': {
+    ytChannel: 'freeCodeCamp / StatQuest',
+    yt: 'i_LwzRVP7bg',
+    notes: {
+      concept: 'Machine learning constructs statistical models from training data to generalize predictions without static rules.',
+      mechanics: 'Supervised learning maps feature vectors (X) to targets (y) by minimizing loss functions via gradient descent.',
+      bestPractice: 'Always split datasets into training, validation, and test subsets to detect overfitting.'
+    },
+    diagram: `[Raw Data] -> [Feature Engineering] -> [Model Training] -> [Evaluation]`,
+    snippet: `from sklearn.ensemble import RandomForestClassifier\nclf = RandomForestClassifier(n_estimators=100)\nclf.fit(X_train, y_train)`,
+    docs: [{ name: "Scikit-Learn Docs", url: "https://scikit-learn.org/" }],
+    vivas: [
+      { q: 'Q1: What problem occurs when train accuracy is 99% but test accuracy is 50%?', options: ['Underfitting', 'Overfitting', 'Data Imbalance', 'Zero Gradient'], ans: 1, exp: 'High train performance with poor test accuracy indicates overfitting.' }
+    ]
+  },
+  'Deep Learning (PyTorch)': {
+    ytChannel: 'Aladdin Persson',
+    yt: 'V_xro1bcAuA',
+    notes: {
+      concept: 'PyTorch provides dynamic tensor computation graphs with hardware GPU acceleration for neural networks.',
+      mechanics: 'Autograd computes partial derivatives during backward propagation using loss.backward().',
+      bestPractice: 'Always call optimizer.zero_grad() before computing gradients on new batches.'
+    },
+    diagram: `[Input Tensor] -> [Forward Pass] -> [Loss Compute] -> [Backward Autograd]`,
+    snippet: `import torch\nimport torch.nn as nn\nmodel = nn.Linear(128, 10)\noutput = model(torch.randn(32, 128))`,
+    docs: [{ name: "PyTorch Documentation", url: "https://pytorch.org/docs/" }],
+    vivas: [
+      { q: 'Q1: Which method call computes autograd derivatives in PyTorch?', options: ['model.train()', 'loss.backward()', 'optimizer.step()', 'torch.no_grad()'], ans: 1, exp: 'loss.backward() computes automatic differentiation gradients.' }
+    ]
+  },
+  'LLMs & RAG': {
+    ytChannel: 'Andrej Karpathy',
+    yt: 'T-D1OfcDW1M',
+    notes: {
+      concept: 'Retrieval-Augmented Generation (RAG) grounds Large Language Models on external vector context to eliminate hallucinations.',
+      mechanics: 'Text embeddings convert documents into dense vector spaces for cosine similarity search.',
+      bestPractice: 'Use chunking strategies with chunk overlap to preserve semantic context across boundaries.'
+    },
+    diagram: `[User Prompt] -> [Vector Embedding Search] -> [Context Injection] -> [LLM Synthesis]`,
+    snippet: `# RAG Architecture Pipeline:\n# 1. Chunk & Embed Document\n# 2. Vector DB Cosine Similarity Search\n# 3. Augment Prompt Context`,
+    docs: [{ name: "LangChain Documentation", url: "https://python.langchain.com/" }],
+    vivas: [
+      { q: 'Q1: What does RAG stand for in Generative AI architectures?', options: ['Recurrent Analysis Graph', 'Retrieval-Augmented Generation', 'Randomized Agent Gateway', 'Relational Array Grouping'], ans: 1, exp: 'Retrieval-Augmented Generation retrieves external vector data to ground LLM generation.' }
+    ]
+  },
+  'Docker & Deployment': {
+    ytChannel: 'TechWorld with Nana',
+    yt: 'pTFZFxd4hOI',
+    notes: {
+      concept: 'Docker packages applications and dependencies into immutable OS-level containers for reliable deployment.',
+      mechanics: 'Containers isolate filesystems and networks while sharing the host Linux kernel via cgroups and namespaces.',
+      bestPractice: 'Use multi-stage Dockerfiles to minimize final production container image size.'
+    },
+    diagram: `[Dockerfile] -> [Docker Image] -> [Isolated Container]`,
+    snippet: `FROM node:20-alpine AS build\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCMD ["node", "dist/index.js"]`,
+    docs: [{ name: "Docker Guide", url: "https://docs.docker.com/" }],
+    vivas: [
+      { q: 'Q1: What is the difference between a Docker Image and Container?', options: ['Image is active process; container is template', 'Image is an immutable blueprint; container is a running instance', 'Containers run without kernels', 'Images require cloud platform hosting'], ans: 1, exp: 'An image is a static immutable blueprint; a container is an active running process.' }
+    ]
+  },
+  'Network Security & Pen Testing': {
+    ytChannel: 'NetworkChuck',
+    yt: '3Kq1MIfTWCE',
+    notes: {
+      concept: 'Penetration testing systematically checks networks, ports, and services for vulnerabilities before exploit.',
+      mechanics: 'Port scanners like Nmap send TCP SYN packets to discover open sockets and daemon versions.',
+      bestPractice: 'Scope engagements strictly within defined Rules of Engagement (RoE) and always obtain authorization.'
+    },
+    diagram: `[Attacker Machine] -> [Port Scan / Nmap] -> [Service Discovery] -> [Vulnerability Identification]`,
+    snippet: `# Nmap SYN Stealth Scan Syntax:\nnmap -sS -sV -p 1-65535 192.168.1.1`,
+    docs: [{ name: "OWASP Foundation", url: "https://owasp.org/" }],
+    vivas: [
+      { q: 'Q1: What makes an Nmap -sS scan stealthier than a full TCP connect scan?', options: ['It completes the 3-way handshake', 'It sends a SYN and resets (RST) without completing the handshake', 'It encrypts packet payloads', 'It bypasses firewalls completely'], ans: 1, exp: 'A SYN scan tears down the socket with RST prior to establishing a full handshake connection.' }
+    ]
+  },
+  'Cryptography & Identity': {
+    ytChannel: 'Computerphile',
+    yt: 'GSIDS_lvRv4',
+    notes: {
+      concept: 'Modern web identity relies on asymmetric key exchange (RSA/ECC) and OAuth2/OIDC token protocols.',
+      mechanics: 'Public Key Infrastructure (PKI) encrypts data using a public key and decrypts it via the recipient private key.',
+      bestPractice: 'Store credentials using salted key derivation functions such as bcrypt or Argon2id.'
+    },
+    diagram: `[Client Request] -> [Auth Server (OIDC)] -> [JWT Signed Access Token] -> [Resource API]`,
+    snippet: `// Verifying JWT Signature Client or Server side\nconst jwt = require('jsonwebtoken');\nconst decoded = jwt.verify(token, process.env.JWT_SECRET);`,
+    docs: [{ name: "Auth0 OIDC Guide", url: "https://auth0.com/docs/get-started/authentication-and-authorization-flow" }],
+    vivas: [
+      { q: 'Q1: Which algorithm is specifically designed for secure password hashing with salt?', options: ['MD5', 'SHA-256', 'Argon2id', 'AES-128'], ans: 2, exp: 'Argon2id is a memory-hard password hashing algorithm designed to resist GPU/ASIC attacks.' }
+    ]
+  },
+  'React Native & Mobile UI': {
+    ytChannel: 'Academind',
+    yt: 'gvkqT_UoM54',
+    notes: {
+      concept: 'React Native compiles JavaScript React components into native iOS (Swift/Obj-C) and Android (Java/Kotlin) UI components.',
+      mechanics: 'Flexbox layout defaults to flex-direction: column on mobile screens rather than web row layout defaults.',
+      bestPractice: 'Use FlatList instead of ScrollList when rendering long datasets to enable viewport virtualization.'
+    },
+    diagram: `[JS Thread (React Components)] <-> [Native Bridge / JSI] <-> [Native iOS/Android UI Engine]`,
+    snippet: `import React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nexport default function App() {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.text}>Native Bridge Online</Text>\n    </View>\n  );\n}`,
+    docs: [{ name: "React Native Official Docs", url: "https://reactnative.dev/docs/getting-started" }],
+    vivas: [
+      { q: 'Q1: Why is FlatList preferred over ScrollView for long dynamic lists?', options: ['FlatList encrypts component state', 'FlatList virtualizes list items off-screen to conserve RAM', 'ScrollView requires backend APIs', 'ScrollView works on iOS only'], ans: 1, exp: 'FlatList renders only visible elements in the current viewport, preventing memory bloat.' }
+    ]
+  },
+  'Cross-Platform State & APIs': {
+    ytChannel: 'Joma Tech',
+    yt: '0-S5a0eXPoc',
+    notes: {
+      concept: 'Mobile applications require robust offline sync states, secure local storage, and cached API networks.',
+      mechanics: 'Redux Toolkit / React Query handles cached asynchronous requests and optimistic UI state updates.',
+      bestPractice: 'Store auth session keys in Secure Store / Keychain rather than plain Unencrypted LocalStorage.'
+    },
+    diagram: `[Mobile UI] -> [React Query / Redux Cache] -> [Async Encrypted Storage] <-> [GraphQL / REST API]`,
+    snippet: `import EncryptedStorage from 'react-native-encrypted-storage';\n\nasync function storeUserSession(token) {\n  await EncryptedStorage.setItem("user_session", token);\n}`,
+    docs: [{ name: "React Query Native", url: "https://tanstack.com/query/latest" }],
+    vivas: [
+      { q: 'Q1: Where should JWT access tokens be saved on mobile platforms for security?', options: ['Plain text files', 'iOS Keychain / Android Encrypted Shared Preferences', 'Browser LocalStorage', 'Global JavaScript variables'], ans: 1, exp: 'Mobile OS keychains wrap token storage in hardware-backed encryption.' }
+    ]
+  }
+};
+
+/* ---------------- APPLICATION STATE ---------------- */
+let state = JSON.parse(localStorage.getItem('sb_app_state_v10')) || {
+  user: null,
+  step: 'auth',
+  roleId: null,
+  matched: [],
+  completed: [],
+  vivaProgress: {},
+  expandedNode: null,
+  atsScore: 0,
+  certName: 'STUDENT DEVELOPER'
+};
+
+function saveState() {
+  localStorage.setItem('sb_app_state_v10', JSON.stringify(state));
+}
+
+function showToast(text) {
+  const t = document.createElement('div');
+  t.className = 'toast mono';
+  t.innerText = text;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+/* ---------------- NAVIGATION ---------------- */
+function renderHeader() {
+  const userNav = document.getElementById('user-nav');
+  if (state.user) {
+    userNav.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span class="mono" style="font-size:11px; color:var(--cyan); background:rgba(0,242,254,0.1); padding:4px 10px; border-radius:12px; border:1px solid var(--cyan);">
+          JWT: ${state.user.token.substring(0, 10)}...
+        </span>
+        <button class="btn btn-gold" style="padding:6px 12px; font-size:11px;" onclick="openCertModal()">🎓 Master Cert</button>
+        <button class="btn btn-purple" style="padding:6px 12px; font-size:11px;" onclick="toggleAiBot()">🤖 AI Bot</button>
+        <button class="btn btn-outline" style="padding:6px 12px; font-size:11px;" onclick="logout()">Sign Out</button>
+      </div>
+    `;
+  } else {
+    userNav.innerHTML = `<button class="btn btn-cyan" style="padding:8px 16px; font-size:12px;" onclick="state.step='auth'; render();">Sign In</button>`;
+  }
+}
+
+function logout() {
+  addTermLog('User signed out.', 'info');
+  state.user = null;
+  state.step = 'auth';
+  saveState();
+  render();
+}
+
+/* ---------------- AUTHENTICATION PORTAL ---------------- */
+function renderAuth() {
+  return `
+    <div class="auth-container glass-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">JWT Authenticator</button>
+      </div>
+      <form onsubmit="handleAuth(event)">
+        <div class="form-group">
+          <label class="mono">DEVELOPER EMAIL IDENTITY</label>
+          <input type="email" id="auth-email" placeholder="dev@company.io" required />
+        </div>
+        <div class="form-group">
+          <label class="mono">ACCESS PASSPHRASE</label>
+          <input type="password" id="auth-password" placeholder="••••••••••••" oninput="updateSecMeter(this.value)" required />
+          <div class="sec-meter"><div class="sec-fill" id="sec-fill"></div></div>
+        </div>
+        <div class="mono" style="font-size:11px; color:var(--muted); margin-bottom:18px;">
+          * Generates client-side OAuth2 bearer tokens and initializes session encryption
+        </div>
+        <button type="submit" class="btn btn-cyan" style="width:100%; justify-content:center; padding:14px;">
+          Authorize Identity & Sign In →
+        </button>
+      </form>
+    </div>
+  `;
+}
+
+function updateSecMeter(val) {
+  const fill = document.getElementById('sec-fill');
+  if (!fill) return;
+  let score = val.length * 10;
+  if (/[A-Z]/.test(val)) score += 20;
+  if (/[0-9]/.test(val)) score += 20;
+  fill.style.width = Math.min(100, score) + '%';
+  fill.style.background = score > 70 ? 'var(--mint)' : score > 40 ? 'var(--gold)' : 'var(--coral)';
+}
+
+function handleAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById('auth-email').value;
+  const fakeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(JSON.stringify({ sub: email, iat: Date.now() })) + '.signature';
+  state.user = { email, token: fakeToken };
+  state.certName = email.split('@')[0].toUpperCase();
+  state.step = 'roles';
+  saveState();
+  playBeep('success');
+  addTermLog(`Authenticated user: ${email}`, 'success');
+  showToast('Session Token Generated!');
+  render();
+}
+
+/* ---------------- TRACK SELECTION SCREEN ---------------- */
+function renderRoles() {
+  return `
+    <div class="hero">
+      <span class="brand-badge pixel-font">STEP 1</span>
+      <h1 class="glow-cyan" style="margin-top:12px;">Select Specialization Path</h1>
+      <p>Choose an enterprise domain. SkillBridge AI will construct your competency roadmap, analyze resume gaps, issue study notes, and generate unified certification upon 100% completion.</p>
+    </div>
+    <div class="role-grid">
+      ${ROLES.map(r => `
+        <div class="role-card glass-card" onclick="selectRole('${r.id}')">
+          <div class="role-card-top">
+            <span class="mono" style="color:var(--cyan); font-size:11px; font-weight:bold;">${r.skills.length} MODULES</span>
+          </div>
+          <div class="role-name">${r.name}</div>
+          <div class="role-tagline">${r.tagline}</div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+function selectRole(roleId) {
+  state.roleId = roleId;
+  state.step = 'input';
+  saveState();
+  addTermLog(`Selected track vector: ${roleId}`, 'info');
+  render();
+}
+
+/* ---------------- RESUME ATS PARSER ---------------- */
+function renderInput() {
+  const role = ROLES.find(r => r.id === state.roleId);
+  return `
+    <div style="max-width:740px; margin:0 auto;">
+      <button class="btn btn-outline" style="margin-bottom:20px; font-size:11px;" onclick="state.step='roles'; render();">← Switch Path</button>
+      <div class="mono" style="color:var(--cyan); font-size:12px; margin-bottom:6px;">ACTIVE VECTOR: ${role.name.toUpperCase()}</div>
+      <h2 style="margin-bottom:20px;">Upload Resume for ATS Skill Analysis</h2>
+
+      <div class="upload-zone glass-card" id="upload-zone">
+        <input type="file" accept=".txt,.pdf,.docx" onchange="handleFileUpload(event)" />
+        <div style="font-size:32px; margin-bottom:8px;">📄</div>
+        <div style="font-weight:700; font-size:16px; margin-bottom:6px;">Drop your Resume (PDF / DOCX / TXT)</div>
+        <div style="color:var(--muted); font-size:12px;" class="mono">Local in-memory extraction (Client-Side Safe)</div>
+      </div>
+
+      ${state.atsScore > 0 ? `
+        <div class="glass-card" style="padding:18px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; border-color:var(--mint);">
+          <div>
+            <div class="mono" style="font-size:11px; color:var(--mint);">PARSER ATS COMPATIBILITY INDEX</div>
+            <div style="font-size:24px; font-weight:bold;" class="pixel-font">${state.atsScore}% FIT SCORE</div>
+          </div>
+          <span class="mono" style="font-size:12px; color:var(--muted);">Skills Extracted Automatically</span>
+        </div>
+      ` : ''}
+
+      <div class="mono" style="color:var(--muted); font-size:11px; margin-top:24px; letter-spacing:1px;">CONFIRMED SKILL MAP (CLICK TO TOGGLE):</div>
+      <div class="chip-row">
+        ${role.skills.map(s => {
+          const isMatched = state.matched.includes(s);
+          return `<div class="chip ${isMatched ? 'on' : ''}" onclick="toggleSkill('${s}')">${isMatched ? '✓ ' : '+ '}${s}</div>`;
+        }).join('')}
+      </div>
+
+      <button class="btn btn-gold" style="width:100%; justify-content:center; padding:16px;" onclick="state.step='dashboard'; saveState(); render();">
+        Generate Interactive Workspace & Radar →
+      </button>
+    </div>
+  `;
+}
+
+function toggleSkill(skill) {
+  if (state.matched.includes(skill)) {
+    state.matched = state.matched.filter(s => s !== skill);
+  } else {
+    state.matched.push(skill);
+  }
+  saveState();
+  render();
+}
+
+async function handleFileUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const role = ROLES.find(r => r.id === state.roleId);
+  let text = '';
+
+  try {
+    showToast('Parsing document buffer...');
+    if (file.name.endsWith('.txt')) {
+      text = await file.text();
+    } else if (file.name.endsWith('.pdf')) {
+      const arrayBuf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + ' ';
+      }
+    } else if (file.name.endsWith('.docx')) {
+      const arrayBuf = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer: arrayBuf });
+      text = result.value;
+    }
+    
+    const lower = text.toLowerCase();
+    let hits = 0;
+    role.skills.forEach(skill => {
+      const keyword = skill.toLowerCase().split(' ')[0];
+      if (lower.includes(keyword)) {
+        hits++;
+        if (!state.matched.includes(skill)) state.matched.push(skill);
+      }
+    });
+
+    state.atsScore = Math.round((hits / role.skills.length) * 100);
+    saveState();
+    playBeep('success');
+    addTermLog(`Parsed file: ${file.name}. ATS Fit: ${state.atsScore}%`, 'success');
+    showToast(`Resume Analyzed! ATS Fit Score: ${state.atsScore}%`);
+    render();
+  } catch (err) {
+    console.error(err);
+    playBeep('error');
+    showToast('File parse failed. Select skills manually.');
+  }
+}
+
+/* ---------------- DASHBOARD & COMPETENCY RADAR ---------------- */
+function renderDashboard() {
+  const role = ROLES.find(r => r.id === state.roleId);
+  const total = role.skills.length;
+  
+  const completedCount = state.completed.length;
+  const matchedCount = state.matched.filter(s => !state.completed.includes(s)).length;
+  const readiness = Math.round(((completedCount + matchedCount) / total) * 100);
+
+  const xp = (matchedCount * 50) + (completedCount * 150);
+  const level = 1 + Math.floor(xp / 300);
+  const xpProgress = xp % 300;
+
+  // STRICT 100% COMPLETION CHECK
+  const isCourseComplete = completedCount === total;
+
+  setTimeout(drawRadarChart, 100);
+
+  return `
+    <div>
+      <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+        <button class="btn btn-outline" style="font-size:11px;" onclick="state.step='input'; render();">← Adjust Skills & Resume</button>
+        <button class="btn btn-outline" style="font-size:11px;" onclick="state.step='roles'; render();">Switch Path</button>
+      </div>
+
+      <div class="hud glass-card">
+        <div class="level-badge pixel-font">L${level}</div>
+        <div>
+          <div class="mono" style="font-size:11px; color:var(--muted);">ACTIVE DOMAIN</div>
+          <div style="font-weight:bold; font-size:18px;">${role.name}</div>
+          <div class="xp-track">
+            <div class="xp-fill" style="width:${(xpProgress/300)*100}%;"></div>
+          </div>
+          <div class="mono" style="font-size:10px; color:var(--muted); margin-top:6px;">${xpProgress} / 300 XP TO NEXT LEVEL</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:32px; font-weight:bold; color:var(--cyan);" class="pixel-font">${readiness}%</div>
+          <div class="mono" style="font-size:11px; color:var(--muted);">READINESS INDEX</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div>
+          <h3 class="mono" style="margin-bottom:16px; font-size:14px; color:var(--cyan);">MODULAR LEARNING & SEQUENTIAL VIVAS</h3>
+          ${role.skills.map(skill => renderSkillNode(skill)).join('')}
+        </div>
+
+        <div>
+          <h3 class="mono" style="margin-bottom:16px; font-size:14px; color:var(--gold);">COMPETENCY RADAR</h3>
+          <div class="glass-card" style="padding:20px; text-align:center;">
+            <canvas id="radar-canvas" width="260" height="260" style="max-width:100%;"></canvas>
+            
+            <div style="margin-top:16px; text-align:left;">
+              <div style="margin-bottom:10px;" class="mono">
+                <span style="color:var(--mint);">■ Completed Mastery (${completedCount}/${total})</span>
+              </div>
+              <div style="margin-bottom:10px;" class="mono">
+                <span style="color:var(--cyan);">■ Pre-Matched Skills (${matchedCount})</span>
+              </div>
+              <div class="mono">
+                <span style="color:var(--muted);">■ Skill Gaps (${total - completedCount - matchedCount})</span>
+              </div>
+            </div>
+
+            <button class="btn btn-gold" style="width:100%; margin-top:20px; justify-content:center; font-size:11px;" ${!isCourseComplete ? 'disabled' : ''} onclick="openCertModal()">
+              ${isCourseComplete ? '🎓 Open Master Certificate' : `🔒 Complete All Modules (${completedCount}/${total})`}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderSkillNode(skill) {
+  const isDone = state.completed.includes(skill);
+  const isMatched = state.matched.includes(skill);
+  const isExpanded = state.expandedNode === skill;
+
+  const detail = SKILL_DETAILS[skill] || SKILL_DETAILS['JavaScript'];
+  const vivas = detail.vivas;
+
+  if (!state.vivaProgress[skill]) {
+    state.vivaProgress[skill] = { currentIdx: 0, passed: false };
+  }
+  const vivaState = state.vivaProgress[skill];
+  const isVivaPassed = vivaState.passed || isDone;
+
+  return `
+    <div class="skill-node">
+      <div class="node-header" onclick="toggleExpand('${skill}')">
+        <div>
+          <div style="font-weight:700; font-size:15px;">${skill}</div>
+          <div class="mono" style="font-size:11px; margin-top:4px; color:${isDone ? 'var(--mint)' : isMatched ? 'var(--cyan)' : 'var(--muted)'}">
+            ${isDone ? '✓ Verified Complete (+150 XP)' : isMatched ? '⚡ Pre-Matched via Resume' : '⚠ Skill Gap - Needs Review'}
+          </div>
+        </div>
+        <div style="color:var(--muted);">${isExpanded ? '▲' : '▼'}</div>
+      </div>
+
+      ${isExpanded ? `
+        <div class="resource-panel">
+          <div class="channel-tag mono">📺 TOPIC CHANNEL: ${detail.ytChannel.toUpperCase()}</div>
+          <div class="mono" style="font-size:11px; color:var(--gold); margin-bottom:8px; display:flex; justify-content:space-between;">
+            <span>RECOMMENDED VIDEO LESSON</span>
+            <a href="https://www.youtube.com/watch?v=${detail.yt}" target="_blank" style="color:var(--cyan); text-decoration:none;">Open in YouTube ↗</a>
+          </div>
+
+          <div class="video-container">
+            <iframe src="https://www.youtube-nocookie.com/embed/${detail.yt}" allowfullscreen></iframe>
+          </div>
+
+          ${detail.docs ? `
+            <div style="margin-bottom:18px;">
+              <div class="mono" style="font-size:11px; color:var(--gold); margin-bottom:8px;">📌 OFFICIAL DOCUMENTATION & RESOURCES</div>
+              <div class="doc-links">
+                ${detail.docs.map(d => `<a href="${d.url}" target="_blank" class="doc-btn">🔗 ${d.name} ↗</a>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="notes-box">
+            <h4>📖 DESCRIPTIVE NOTES & SYSTEM ARCHITECTURE</h4>
+            <div class="notes-section">
+              <div class="notes-section-title">1. Core Concept</div>
+              <div class="notes-content">${detail.notes.concept}</div>
+            </div>
+            <div class="notes-section">
+              <div class="notes-section-title">2. Execution Mechanics</div>
+              <div class="notes-content">${detail.notes.mechanics}</div>
+              <div class="arch-diagram">${detail.diagram}</div>
+            </div>
+            <div class="notes-section">
+              <div class="notes-section-title">3. Production Best Practice</div>
+              <div class="notes-content">${detail.notes.bestPractice}</div>
+            </div>
+            <div class="code-block">${detail.snippet}</div>
+          </div>
+
+          <div class="viva-box">
+            ${isVivaPassed ? `
+              <div class="mono viva-explanation">
+                <strong>✓ VIVA PASSED (+50 XP BONUS):</strong> You have answered all technical questions for this module correctly!
+              </div>
+            ` : `
+              <div class="viva-header">
+                <span class="viva-tag mono">SEQUENTIAL ASSESSMENT</span>
+                <span class="viva-progress mono">Question ${vivaState.currentIdx + 1} of ${vivas.length}</span>
+              </div>
+              <div style="font-size:14px; margin-bottom:12px; font-weight:600; line-height:1.5;">${vivas[vivaState.currentIdx].q}</div>
+              ${vivas[vivaState.currentIdx].options.map((opt, idx) => `
+                <button class="viva-option mono" onclick="answerViva('${skill}', ${idx}, ${vivas[vivaState.currentIdx].ans}, ${vivas.length})">
+                  ${idx + 1}. ${opt}
+                </button>
+              `).join('')}
+            `}
+          </div>
+
+          <div style="margin-top:18px; text-align:right;">
+            ${isDone ? `
+              <button class="btn btn-outline" style="font-size:11px;" onclick="markIncomplete('${skill}')">Mark Incomplete</button>
+            ` : `
+              <button class="btn btn-mint" style="font-size:11px;" onclick="markComplete('${skill}')">Mark Module Complete (+150 XP)</button>
+            `}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+function drawRadarChart() {
+  const canvas = document.getElementById('radar-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const role = ROLES.find(r => r.id === state.roleId);
+  const skills = role.skills;
+  const numSkills = skills.length;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  const radius = 85;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.lineWidth = 1;
+  for (let r = 1; r <= 3; r++) {
+    ctx.beginPath();
+    for (let i = 0; i < numSkills; i++) {
+      const angle = (Math.PI * 2 / numSkills) * i - Math.PI / 2;
+      const x = centerX + (radius * (r / 3)) * Math.cos(angle);
+      const y = centerY + (radius * (r / 3)) * Math.sin(angle);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  ctx.beginPath();
+  skills.forEach((s, i) => {
+    const angle = (Math.PI * 2 / numSkills) * i - Math.PI / 2;
+    let score = 0.2;
+    if (state.completed.includes(s)) score = 1.0;
+    else if (state.matched.includes(s)) score = 0.6;
+
+    const x = centerX + (radius * score) * Math.cos(angle);
+    const y = centerY + (radius * score) * Math.sin(angle);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0, 242, 254, 0.25)';
+  ctx.fill();
+  ctx.strokeStyle = 'var(--cyan)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
+/* ---------------- VIVA & CERTIFICATE HANDLERS ---------------- */
+function answerViva(skill, selected, correct, totalQuestions) {
+  let vivaState = state.vivaProgress[skill];
+  if (selected === correct) {
+    vivaState.currentIdx++;
+    playBeep('success');
+    addTermLog(`Viva Q${vivaState.currentIdx} passed for ${skill}`, 'success');
+
+    if (vivaState.currentIdx >= totalQuestions) {
+      vivaState.passed = true;
+      if (!state.completed.includes(skill)) state.completed.push(skill);
+      showToast(`Module ${skill} Passed!`);
+    } else {
+      showToast(`Correct! Loading question ${vivaState.currentIdx + 1}...`);
+    }
+  } else {
+    playBeep('error');
+    addTermLog(`Viva failed for ${skill}`, 'error');
+    showToast('Incorrect choice. Review the notes and try again!');
+  }
+  saveState();
+  render();
+}
+
+function openCertModal() {
+  const role = ROLES.find(r => r.id === state.roleId) || ROLES[0];
+  const nameInput = document.getElementById('cert-user-name-input');
+  if(nameInput) nameInput.value = state.certName || 'STUDENT DEVELOPER';
+  document.getElementById('cert-role-title').innerText = role.name;
+  document.getElementById('cert-id').innerText = 'SB-MASTER-' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('cert-date').innerText = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  document.getElementById('cert-modal').style.display = 'flex';
+  playBeep('success');
+}
+
+function saveCertName(val) {
+  state.certName = val;
+  saveState();
+}
+
+function closeCertModal() {
+  document.getElementById('cert-modal').style.display = 'none';
+}
+
+function toggleExpand(skill) {
+  state.expandedNode = state.expandedNode === skill ? null : skill;
+  saveState();
+  render();
+}
+
+function markComplete(skill) {
+  if (!state.completed.includes(skill)) state.completed.push(skill);
+  saveState();
+  playBeep('success');
+  addTermLog(`Module completed: ${skill}`, 'success');
+  showToast(`Completed ${skill}! +150 XP`);
+  render();
+}
+
+function markIncomplete(skill) {
+  state.completed = state.completed.filter(s => s !== skill);
+  if (state.vivaProgress[skill]) {
+    state.vivaProgress[skill] = { currentIdx: 0, passed: false };
+  }
+  saveState();
+  render();
+}
+
+/* ---------------- ACCURATE INTELLIGENT AI MENTOR ---------------- */
+function toggleAiBot() {
+  const chat = document.getElementById('ai-chat');
+  chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
+}
+
+function sendAiMessage() {
+  const input = document.getElementById('ai-user-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const container = document.getElementById('ai-msg-container');
+  container.innerHTML += `<div class="msg-user">${text}</div>`;
+  input.value = '';
+
+  setTimeout(() => {
+    const q = text.toLowerCase();
+    let reply = "";
+
+    // Exact Query Match Engine (Handles Full Forms, Syntax & Explanations)
+    if (q.includes('full form') || q.includes('what is llm') || q.includes('llm stand for')) {
+      reply = `<strong>Large Language Model (LLM)</strong><br/><br/>
+      An <strong>LLM</strong> is a type of artificial intelligence model trained on vast amounts of text data using deep learning architectures (primarily <em>Transformers</em>) to process and generate human-like language.
+      <ul>
+        <li><strong>Examples:</strong> GPT-4, Claude 3.5, Llama 3, Gemini.</li>
+        <li><strong>Core Tech:</strong> Attention mechanisms, Tokenization, Vector Embeddings.</li>
+      </ul>`;
+    } else if (q.includes('react') || q.includes('hook') || q.includes('state')) {
+      reply = `<strong>React Hooks & State Architecture:</strong><br/><br/>
+      React manages user interfaces declaratively using an in-memory Virtual DOM.
+      <ul>
+        <li><code>useState</code>: Manages local component state.</li>
+        <li><code>useEffect</code>: Handles side effects like API data fetching.</li>
+      </ul>
+      <pre>const [data, setData] = useState(null);</pre>`;
+    } else if (q.includes('node') || q.includes('express') || q.includes('backend') || q.includes('api')) {
+      reply = `<strong>Node.js & Express REST APIs:</strong><br/><br/>
+      Node handles concurrent connections asynchronously using libuv and the V8 Event Loop.
+      <ul>
+        <li><strong>Middleware:</strong> Intercepts and parses requests before reaching route handlers.</li>
+        <li><strong>Async/Await:</strong> Use try/catch blocks around database queries.</li>
+      </ul>`;
+    } else if (q.includes('python') || q.includes('pytorch') || q.includes('machine learning')) {
+      reply = `<strong>Python & AI Engineering:</strong><br/><br/>
+      Python is the primary language for Artificial Intelligence and Data Science.
+      <ul>
+        <li><strong>PyTorch:</strong> Neural network acceleration via GPU tensors.</li>
+        <li><strong>RAG Pipelines:</strong> Connects LLMs to Vector DBs for factual contextual retrieval.</li>
+      </ul>`;
+    } else if (q.includes('sql') || q.includes('database') || q.includes('postgres')) {
+      reply = `<strong>SQL Relational Databases:</strong><br/><br/>
+      SQL systems ensure ACID transaction guarantees.
+      <ul>
+        <li><strong>B-Tree Indexes:</strong> Speeds up <code>SELECT</code> queries.</li>
+        <li><strong>Parameterized Queries:</strong> Protects applications from SQL injection attacks.</li>
+      </ul>`;
+    } else {
+      reply = `<strong>AI Mentor Answer:</strong><br/><br/>
+      Thank you for asking: <em>"${text}"</em>.<br/><br/>
+      To solve or study this effectively:
+      <ul>
+        <li>Check the official documentation links in your expanded module.</li>
+        <li>Break down the code logic into smaller modular functions.</li>
+      </ul>
+      Feel free to ask me for code examples, debugging tips, or conceptual explanations!`;
+    }
+
+    container.innerHTML += `<div class="msg-ai">${reply}</div>`;
+    container.scrollTop = container.scrollHeight;
+    playBeep('success');
+  }, 500);
+}
+
+/* ---------------- RENDER DISPATCHER ---------------- */
+function render() {
+  renderHeader();
+  const app = document.getElementById('app');
+
+  if (state.step === 'auth' && !state.user) {
+    app.innerHTML = renderAuth();
+  } else if (state.step === 'roles' || !state.roleId) {
+    app.innerHTML = renderRoles();
+  } else if (state.step === 'input') {
+    app.innerHTML = renderInput();
+  } else if (state.step === 'dashboard') {
+    app.innerHTML = renderDashboard();
+  }
+}
+
+// Initial Run
+render();
+</script>
+</body>
+</html>
