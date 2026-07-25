@@ -1,65 +1,71 @@
 const express = require('express');
 const path = require('path');
-const { GoogleGenAI } = require('@google/genai');
+const https = require('https');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Google Gen AI client safely
-const apiKey = process.env.GEMINI_API_KEY;
-let ai = null;
-
-if (apiKey) {
-  ai = new GoogleGenAI({ apiKey });
-} else {
-  console.warn("WARNING: GEMINI_API_KEY environment variable is missing.");
-}
-
-// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Smart AI Mentor API Route
-app.post('/api/chat', async (req, res) => {
-  try {
-    const { message } = req.body;
+// Gemini AI Chat Route
+app.post('/api/chat', (req, res) => {
+  const { message } = req.body;
+  const apiKey = process.env.GEMINI_API_KEY;
 
-    if (!message || !message.trim()) {
-      return res.status(400).json({ error: "Message is required." });
+  if (!message) {
+    return res.status(400).json({ error: "Message is required." });
+  }
+
+  if (!apiKey) {
+    return res.status(500).json({ reply: "API key is missing on the server environment." });
+  }
+
+  const payload = JSON.stringify({
+    contents: [
+      {
+        parts: [{ text: `You are Smart AI Mentor on SkillBridge AI platform. Answer clearly and helpfully: ${message}` }]
+      }
+    ]
+  });
+
+  const options = {
+    hostname: 'generativelanguage.googleapis.com',
+    path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
     }
+  };
 
-    if (!ai) {
-      return res.status(500).json({ 
-        reply: "GEMINI_API_KEY is not configured on the server environment." 
-      });
-    }
-
-    // Generate response using Gemini 2.5 Flash
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: message,
-      config: {
-        systemInstruction: "You are the Smart AI Mentor on the SkillBridge AI platform. Answer any technical, career, or learning question thoroughly, accurately, and provide formatted code snippets whenever requested."
+  const apiReq = https.request(options, (apiRes) => {
+    let data = '';
+    apiRes.on('data', chunk => data += chunk);
+    apiRes.on('end', () => {
+      try {
+        const parsed = JSON.parse(data);
+        const reply = parsed.candidates?.[0]?.content?.parts?.[0]?.text || "No reply generated.";
+        res.json({ reply });
+      } catch (e) {
+        res.status(500).json({ reply: "Error parsing AI response." });
       }
     });
+  });
 
-    const reply = response.text || "No response received from AI.";
-    res.json({ reply });
+  apiReq.on('error', () => {
+    res.status(500).json({ reply: "Error connecting to AI service." });
+  });
 
-  } catch (error) {
-    console.error("Gemini API Error:", error);
-    res.status(500).json({ 
-      reply: "Error communicating with Gemini AI. Check server logs." 
-    });
-  }
+  apiReq.write(payload);
+  apiReq.end();
 });
 
-// Single Page Application Fallback Route (Express 4 & 5 Compatible)
+// Wildcard catch-all for single page application
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start Server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
