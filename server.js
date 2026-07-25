@@ -9,9 +9,9 @@ const PORT = process.env.PORT || 10000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// In-Memory Database (For Demo & Fast Prototyping)
-const users = new Map(); // email -> { password, name }
-const otpStore = new Map(); // email -> { otp, expiresAt }
+// In-Memory Database
+const users = new Map();
+const otpStore = new Map();
 
 // Default Demo User
 users.set('student@skillbridge.ai', { password: 'password123', name: 'Alex Developer' });
@@ -38,7 +38,6 @@ app.post('/api/auth/login', (req, res) => {
     if (!user || user.password !== password) {
         return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
-    // Generate mock JWT token
     const token = 'jwt_' + crypto.randomBytes(16).toString('hex');
     return res.json({ success: true, token, name: user.name, message: 'Login successful!' });
 });
@@ -50,14 +49,12 @@ app.post('/api/auth/request-otp', (req, res) => {
         return res.status(404).json({ success: false, message: 'No account registered with this email.' });
     }
     
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 mins validity
+    const expiresAt = Date.now() + 5 * 60 * 1000;
     otpStore.set(email, { otp, expiresAt });
 
     console.log(`[OTP GENERATED] Email: ${email} | OTP: ${otp}`);
 
-    // In production, integrate Nodemailer/SendGrid here. For now, returned to UI for instant testing.
     return res.json({ 
         success: true, 
         message: `OTP sent successfully! (Demo OTP: ${otp})`,
@@ -81,7 +78,6 @@ app.post('/api/auth/reset-password', (req, res) => {
         return res.status(400).json({ success: false, message: 'Invalid OTP code.' });
     }
 
-    // Update password
     const user = users.get(email);
     user.password = newPassword;
     users.set(email, user);
@@ -116,8 +112,8 @@ app.post('/api/chat', (req, res) => {
     return res.json({ reply });
 });
 
-// Serve Frontend
-app.get('*', (req, res) => {
+// Serve Frontend (Fixed for Express v5)
+app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
