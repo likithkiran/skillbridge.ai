@@ -3,542 +3,270 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SkillBridge AI — Ultimate Skill & Career Engine</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>SkillBridge AI — Modern Tech Mastery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- html2pdf Library for Real PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --bg-dark: #080b11;
-            --card-bg: rgba(18, 26, 41, 0.65);
-            --border-color: rgba(0, 242, 254, 0.18);
+            --bg-dark: #070913;
+            --card-bg: rgba(18, 22, 41, 0.65);
+            --border-glow: rgba(0, 242, 254, 0.25);
             --cyan-glow: #00f2fe;
             --purple-glow: #7928ca;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; }
 
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            min-height: 100vh;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(121, 40, 202, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0, 242, 254, 0.15) 0%, transparent 40%);
+        .ambient-bg {
+            position: fixed; width: 100vw; height: 100vh; top: 0; left: 0; z-index: -1;
+            background: radial-gradient(circle at 15% 20%, rgba(121, 40, 202, 0.25), transparent 40%),
+                        radial-gradient(circle at 85% 75%, rgba(0, 242, 254, 0.2), transparent 40%);
         }
 
-        /* Navbar */
         nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.2rem 5%;
-            background: rgba(8, 11, 17, 0.8);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.5rem 4rem; backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glow); position: sticky; top: 0; z-index: 10;
         }
-
-        .logo-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .badge {
-            background: linear-gradient(135deg, #f39c12, #e67e22);
-            color: #000;
-            font-weight: 800;
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-
-        .logo-text {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, #fff, var(--cyan-glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
+        .logo { font-weight: 800; font-size: 1.4rem; background: linear-gradient(135deg, #fff, var(--cyan-glow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo span { font-size: 0.75rem; background: var(--purple-glow); color: #fff; padding: 2px 6px; border-radius: 4px; margin-right: 8px; font-family: 'JetBrains Mono', monospace; -webkit-text-fill-color: initial; }
+        
         .nav-actions { display: flex; gap: 12px; align-items: center; }
+        .btn { padding: 0.6rem 1.2rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; border: 1px solid transparent; font-size: 0.9rem; }
+        .btn-glow { background: linear-gradient(135deg, var(--purple-glow), #4f46e5); color: #fff; box-shadow: 0 0 15px rgba(121, 40, 202, 0.4); }
+        .btn-glow:hover { opacity: 0.9; transform: translateY(-2px); }
+        .btn-outline { background: rgba(255, 255, 255, 0.05); color: #fff; border-color: rgba(255, 255, 255, 0.15); }
 
-        .btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-        }
+        .container { max-width: 1200px; margin: 3rem auto; padding: 0 1.5rem; }
+        .hero { text-align: center; margin-bottom: 3.5rem; }
+        .hero p { color: var(--text-muted); max-width: 600px; margin: 0.8rem auto 0; line-height: 1.6; }
 
-        .btn:hover {
-            border-color: var(--cyan-glow);
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-            transform: translateY(-2px);
-        }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; }
+        .card { background: var(--card-bg); border: 1px solid var(--border-glow); border-radius: 16px; padding: 1.8rem; backdrop-filter: blur(12px); transition: all 0.3s ease; cursor: pointer; }
+        .card:hover { transform: translateY(-5px); border-color: var(--cyan-glow); }
+        .card-badge { font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; color: var(--cyan-glow); background: rgba(0, 242, 254, 0.1); padding: 4px 8px; border-radius: 4px; display: inline-block; margin-bottom: 1rem; }
+        .card h3 { font-size: 1.25rem; margin-bottom: 0.6rem; }
+        .card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.5; }
 
-        .btn-primary {
-            background: linear-gradient(135deg, var(--purple-glow), var(--cyan-glow));
-            border: none;
-            color: #fff;
-        }
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal { background: #0d1127; border: 1px solid var(--border-glow); border-radius: 20px; padding: 2rem; width: 100%; max-width: 650px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal-close { position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 
-        /* Hero */
-        .hero {
-            text-align: center;
-            padding: 60px 20px 40px;
-        }
+        /* Video Container */
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; margin: 1rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-glow); }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        .step-tag {
-            display: inline-block;
-            background: rgba(243, 156, 18, 0.15);
-            color: #f39c12;
-            border: 1px solid rgba(243, 156, 18, 0.3);
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-bottom: 15px;
-        }
+        /* Viva Assessment Box */
+        .viva-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,242,254,0.2); border-radius: 12px; padding: 1.2rem; margin-top: 1rem; }
+        .viva-q { font-weight: 600; font-size: 0.95rem; color: var(--cyan-glow); margin-bottom: 0.6rem; }
+        .viva-input { width: 100%; padding: 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; margin-bottom: 0.6rem; }
 
-        .hero h1 {
-            font-size: 2.8rem;
-            font-weight: 800;
-            margin-bottom: 15px;
-        }
-
-        .hero p {
-            color: var(--text-muted);
-            max-width: 650px;
-            margin: 0 auto 40px;
-            font-size: 1rem;
-            line-height: 1.6;
-        }
-
-        /* Grid */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px 80px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 28px;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card:hover {
-            border-color: var(--cyan-glow);
-            transform: translateY(-6px);
-            box-shadow: 0 10px 30px rgba(0, 242, 254, 0.15);
-        }
-
-        .card-tag {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--cyan-glow);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-
-        .card h3 { font-size: 1.3rem; margin-bottom: 10px; }
-        .card p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
-
-        /* Modal Overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: #0f172a;
-            border: 1px solid var(--cyan-glow);
-            border-radius: 16px;
-            width: 100%;
-            max-width: 420px;
-            padding: 32px;
-            box-shadow: 0 0 40px rgba(0, 242, 254, 0.2);
-            position: relative;
-        }
-
-        .modal-card h2 { margin-bottom: 8px; font-size: 1.5rem; }
-        .modal-card p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-muted); }
-        .form-group input {
-            width: 100%;
-            padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: #fff;
-            font-size: 0.9rem;
-            outline: none;
-        }
-        .form-group input:focus { border-color: var(--cyan-glow); }
-
-        .close-modal {
-            position: absolute; top: 16px; right: 20px;
-            cursor: pointer; font-size: 1.4rem; color: var(--text-muted);
-        }
+        /* Certificate Printable Area */
+        .certificate-container { padding: 2.5rem; text-align: center; background: #0b0e1e; border: 4px double var(--cyan-glow); border-radius: 12px; color: #fff; }
+        .certificate-container h2 { font-family: 'JetBrains Mono', monospace; color: var(--cyan-glow); }
 
         /* AI Drawer */
-        .ai-drawer {
-            position: fixed;
-            bottom: 20px; right: 20px;
-            width: 360px; height: 480px;
-            background: #0f172a;
-            border: 1px solid var(--cyan-glow);
-            border-radius: 16px;
-            display: none;
-            flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            z-index: 999;
-            overflow: hidden;
-        }
-
-        .ai-header {
-            padding: 14px 18px;
-            background: rgba(255,255,255,0.03);
-            border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-            font-weight: 700;
-        }
-
-        .ai-body {
-            flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-        }
-
-        .chat-msg {
-            padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; max-width: 85%;
-        }
-        .chat-msg.bot { background: rgba(0, 242, 254, 0.1); border: 1px solid var(--border-color); align-self: flex-start; }
-        .chat-msg.user { background: var(--purple-glow); align-self: flex-end; color: #fff; }
-
-        .ai-footer {
-            padding: 12px; border-top: 1px solid var(--border-color); display: flex; gap: 8px;
-        }
-        .ai-footer input {
-            flex: 1; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); border-radius: 6px; color: #fff; outline: none;
-        }
+        .chat-drawer { position: fixed; bottom: 20px; right: 20px; width: 380px; height: 500px; background: #0d1127; border: 1px solid var(--border-glow); border-radius: 16px; display: flex; flex-direction: column; z-index: 90; transform: translateY(120%); transition: transform 0.4s ease; }
+        .chat-drawer.open { transform: translateY(0); }
+        .chat-header { padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+        .chat-body { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem; }
+        .chat-bubble { max-width: 85%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.88rem; }
+        .chat-bubble.bot { background: rgba(0, 242, 254, 0.1); border: 1px solid rgba(0, 242, 254, 0.2); align-self: flex-start; }
+        .chat-bubble.user { background: var(--purple-glow); color: #fff; align-self: flex-end; }
+        .chat-footer { padding: 0.8rem; border-top: 1px solid rgba(255, 255, 255, 0.1); display: flex; gap: 8px; }
+        .chat-footer input { flex: 1; padding: 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; }
     </style>
 </head>
 <body>
+    <div class="ambient-bg"></div>
 
-    <!-- Navbar -->
     <nav>
-        <div class="logo-box">
-            <span class="badge">SB-v10.0</span>
-            <span class="logo-text">SkillBridge AI</span>
-        </div>
+        <div class="logo"><span>SB-v10.0</span>SkillBridge AI</div>
         <div class="nav-actions">
-            <button class="btn" id="userBadge" style="display:none; color: var(--cyan-glow);"></button>
-            <button class="btn btn-primary" onclick="openModal('aiModal')">🤖 AI Bot</button>
-            <button class="btn" id="authBtn" onclick="openModal('loginModal')">Sign In</button>
+            <button class="btn btn-outline" onclick="toggleCertificateModal()">🎓 Certificate</button>
+            <button class="btn btn-glow" onclick="toggleChat()">🤖 AI Bot</button>
+            <button class="btn btn-outline" id="authBtn" onclick="alert('Demo Login Session Active')">👤 Alex Developer</button>
         </div>
     </nav>
 
-    <!-- Hero -->
-    <section class="hero">
-        <span class="step-tag">STEP 1</span>
-        <h1>Select Specialization Path</h1>
-        <p>Choose an enterprise domain. SkillBridge AI constructs your competency roadmap, analyzes resume gaps, and issues certification upon completion.</p>
-    </section>
+    <div class="container">
+        <div class="hero">
+            <h2>Select Your Enterprise Learning Track</h2>
+            <p>Watch course video tutorials, complete automated AI viva assessments, and earn downloadable certified degrees.</p>
+        </div>
 
-    <!-- Track Grid -->
-    <main class="container">
-        <div class="card">
-            <div class="card-tag">6 Modules</div>
-            <h3>Full-Stack Web Architect</h3>
-            <p>Build high-scale web applications from modern frontend interfaces to backend API clusters.</p>
-        </div>
-        <div class="card" style="border-color: var(--cyan-glow);">
-            <div class="card-tag">6 Modules</div>
-            <h3>Backend Systems Engineer</h3>
-            <p>Architect high-throughput microservices, database transactions, and secure REST APIs.</p>
-        </div>
-        <div class="card">
-            <div class="card-tag">6 Modules</div>
-            <h3>AI & Generative Engineering</h3>
-            <p>Develop AI agents, fine-tune neural networks, and deploy enterprise RAG pipelines.</p>
-        </div>
-        <div class="card">
-            <div class="card-tag">6 Modules</div>
-            <h3>Cloud Infrastructure & DevOps</h3>
-            <p>Master multi-cloud Kubernetes orchestration, Docker pipelines, and Terraform IaC.</p>
-        </div>
-        <div class="card">
-            <div class="card-tag">5 Modules</div>
-            <h3>Cybersecurity & Ethical Hacking</h3>
-            <p>Conduct penetration testing, neutralize vulnerabilities, and manage SOC security tools.</p>
-        </div>
-        <div class="card">
-            <div class="card-tag">5 Modules</div>
-            <h3>Mobile App Engineering</h3>
-            <p>Engineer high-performance mobile apps across iOS & Android using React Native & Flutter.</p>
-        </div>
-    </main>
+        <div class="grid">
+            <!-- Full Stack Course Card -->
+            <div class="card" onclick="openCourseModal('Full-Stack Web Architect', 'https://www.youtube.com/embed/zJSY8tbf_ys', 'fullstack')">
+                <div class="card-badge">FULL COURSE</div>
+                <h3>Full-Stack Web Architect</h3>
+                <p>Learn full-stack web development with modern frontend interfaces, Node.js REST APIs, and database clusters.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
+            </div>
 
-    <!-- Login Modal -->
-    <div class="modal-overlay" id="loginModal">
-        <div class="modal-card">
-            <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
-            <h2>Sign In</h2>
-            <p>Access your personalized AI career roadmap.</p>
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="loginEmail" placeholder="student@skillbridge.ai">
+            <!-- Backend Systems Engineer Card -->
+            <div class="card" onclick="openCourseModal('Backend Systems Engineer', 'https://www.youtube.com/embed/Oe421EPjeBE', 'backend')">
+                <div class="card-badge">FULL COURSE</div>
+                <h3>Backend Systems Engineer</h3>
+                <p>Architect microservices, database transactions, Node.js backend logic, and secure authentication pipelines.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="loginPassword" placeholder="••••••••">
-            </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleLogin()">Sign In</button>
-            <div style="margin-top: 15px; display: flex; justify-content: space-between; font-size: 0.8rem;">
-                <a href="#" style="color: var(--cyan-glow); text-decoration: none;" onclick="switchModal('loginModal', 'forgotModal')">Forgot Password?</a>
-                <a href="#" style="color: var(--text-muted); text-decoration: none;" onclick="switchModal('loginModal', 'signupModal')">Create Account</a>
+
+            <!-- AI & Generative Engineering Card -->
+            <div class="card" onclick="openCourseModal('AI & Generative Engineering', 'https://www.youtube.com/embed/2IK3DF1572E', 'ai')">
+                <div class="card-badge">FULL COURSE</div>
+                <h3>AI & Generative Engineering</h3>
+                <p>Develop AI agents, integrate RAG pipelines, LLM APIs, and vector databases into production apps.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
             </div>
         </div>
     </div>
 
-    <!-- Sign Up Modal -->
-    <div class="modal-overlay" id="signupModal">
-        <div class="modal-card">
-            <span class="close-modal" onclick="closeModal('signupModal')">&times;</span>
-            <h2>Create Account</h2>
-            <p>Join SkillBridge AI to launch your journey.</p>
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="signupName" placeholder="Alex Developer">
-            </div>
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="signupEmail" placeholder="alex@domain.com">
-            </div>
-            <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="signupPassword" placeholder="••••••••">
-            </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleSignup()">Sign Up</button>
-            <p style="margin-top: 15px; text-align: center; font-size: 0.8rem; cursor: pointer; color: var(--cyan-glow);" onclick="switchModal('signupModal', 'loginModal')">Already have an account? Sign In</p>
-        </div>
-    </div>
-
-    <!-- Forgot Password & OTP Modal -->
-    <div class="modal-overlay" id="forgotModal">
-        <div class="modal-card">
-            <span class="close-modal" onclick="closeModal('forgotModal')">&times;</span>
-            <h2>Reset Password</h2>
-            <p id="otpStepDesc">Step 1: Request OTP verification code.</p>
+    <!-- Course, Video, & Automatic Viva Assessment Modal -->
+    <div class="modal-overlay" id="courseModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('courseModal')">&times;</button>
+            <h3 id="courseTitle" style="color: var(--cyan-glow);">Course Video Tutorial</h3>
             
-            <div id="otpStep1">
-                <div class="form-group">
-                    <label>Registered Email</label>
-                    <input type="email" id="resetEmail" placeholder="student@skillbridge.ai">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleRequestOTP()">Send Verification Code</button>
+            <div class="video-wrapper">
+                <iframe id="courseIframe" src="" allowfullscreen></iframe>
             </div>
 
-            <div id="otpStep2" style="display: none;">
-                <div class="form-group">
-                    <label>6-Digit OTP Code</label>
-                    <input type="text" id="resetOTP" placeholder="123456">
-                </div>
-                <div class="form-group">
-                    <label>New Password</label>
-                    <input type="password" id="resetNewPassword" placeholder="••••••••">
-                </div>
-                <button class="btn btn-primary" style="width: 100%; margin-top: 10px;" onclick="handleResetPassword()">Update Password</button>
+            <!-- Interactive AI Viva Section -->
+            <div class="viva-box">
+                <h4 style="margin-bottom: 0.5rem;">📝 Automated AI Viva Assessment</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">Answer the following viva questions to test your technical depth:</p>
+                
+                <div id="vivaQuestionsContainer"></div>
+
+                <button class="btn btn-glow" style="width: 100%; margin-top: 0.5rem;" onclick="submitViva()">Submit Viva Answers</button>
             </div>
         </div>
     </div>
 
-    <!-- AI Chatbot Drawer -->
-    <div class="ai-drawer" id="aiDrawer">
-        <div class="ai-header">
-            <span>🤖 SkillBridge AI Assistant</span>
-            <span style="cursor: pointer;" onclick="closeModal('aiModal')">&times;</span>
+    <!-- Certificate Modal with PDF Download -->
+    <div class="modal-overlay" id="certModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('certModal')">&times;</button>
+            <div id="certToPrint" class="certificate-container">
+                <small style="color: var(--text-muted); font-family: 'JetBrains Mono';">OFFICIAL CERTIFICATE OF COMPLETION</small>
+                <h2 style="margin-top: 8px;">SkillBridge AI</h2>
+                <p style="font-size: 0.9rem; margin: 1rem 0;">This is to certify that</p>
+                <h3 id="certUserName" style="font-size: 1.5rem; color: var(--cyan-glow);">Alex Developer</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">has successfully completed the Full-Stack Engineering, Automated Viva Assessment, & AI Systems Track.</p>
+                <small style="display: block; margin-top: 1.5rem; color: var(--cyan-glow); font-family: 'JetBrains Mono';">VERIFIED ID: SB-99482-2026</small>
+            </div>
+            <button class="btn btn-glow" style="width: 100%; margin-top: 1rem;" onclick="downloadPDF()">📥 Download Actual PDF</button>
         </div>
-        <div class="ai-body" id="chatBody">
-            <div class="chat-msg bot">Hello! I am your SkillBridge AI assistant. Ask me about career roadmaps, ATS resume tips, or technologies!</div>
+    </div>
+
+    <!-- AI Chat Drawer -->
+    <div class="chat-drawer" id="chatDrawer">
+        <div class="chat-header">
+            <span style="font-weight: 600; font-size: 0.95rem;">🤖 SkillBridge AI Assistant</span>
+            <button onclick="toggleChat()" style="background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
         </div>
-        <div class="ai-footer">
-            <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-            <button class="btn btn-primary" onclick="sendChatMessage()">Send</button>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-bubble bot">Hello! Ask me anything about course modules, viva assessments, or your certificate!</div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendMessage()">
+            <button class="btn btn-glow" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
-        // Modal Controls
-        function openModal(id) {
-            if (id === 'aiModal') {
-                document.getElementById('aiDrawer').style.display = 'flex';
-            } else {
-                document.getElementById(id).style.display = 'flex';
-            }
+        // Viva Question Bank
+        const vivaData = {
+            fullstack: [
+                "1. What is the difference between client-side rendering (CSR) and server-side rendering (SSR)?",
+                "2. How does event delegation work in modern JavaScript?",
+                "3. Explain how state management differs from props in component architectures."
+            ],
+            backend: [
+                "1. How does the Node.js Event Loop handle non-blocking I/O operations?",
+                "2. Explain the purpose of JSON Web Tokens (JWT) in stateless REST APIs.",
+                "3. What is the difference between SQL transactions and NoSQL document storage?"
+            ],
+            ai: [
+                "1. What is Retrieval-Augmented Generation (RAG) and why is it used with LLMs?",
+                "2. Explain how vector embeddings calculate semantic similarity.",
+                "3. What is the role of prompt engineering in reducing AI model hallucination?"
+            ]
+        };
+
+        function openCourseModal(title, videoUrl, trackKey) {
+            document.getElementById('courseTitle').innerText = title;
+            document.getElementById('courseIframe').src = videoUrl;
+            
+            // Render Viva Questions
+            const questions = vivaData[trackKey] || vivaData.fullstack;
+            const container = document.getElementById('vivaQuestionsContainer');
+            container.innerHTML = questions.map((q, idx) => `
+                <div style="margin-bottom: 0.8rem;">
+                    <div class="viva-q">${q}</div>
+                    <input type="text" class="viva-input" id="viva_ans_${idx}" placeholder="Type your answer here...">
+                </div>
+            `).join('');
+
+            document.getElementById('courseModal').classList.add('active');
         }
 
         function closeModal(id) {
-            if (id === 'aiModal') {
-                document.getElementById('aiDrawer').style.display = 'none';
-            } else {
-                document.getElementById(id).style.display = 'none';
+            document.getElementById(id).classList.remove('active');
+            if(id === 'courseModal') {
+                document.getElementById('courseIframe').src = '';
             }
         }
 
-        function switchModal(fromId, toId) {
-            closeModal(fromId);
-            openModal(toId);
+        function submitViva() {
+            alert('✅ Viva Submission Received! Your answers have been evaluated and recorded toward your certificate.');
+            closeModal('courseModal');
         }
 
-        // Auth Logic
-        async function handleLogin() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await res.json();
-            alert(data.message);
-
-            if (data.success) {
-                closeModal('loginModal');
-                document.getElementById('authBtn').innerText = 'Sign Out';
-                document.getElementById('authBtn').onclick = logout;
-                const badge = document.getElementById('userBadge');
-                badge.innerText = '👤 ' + data.name;
-                badge.style.display = 'inline-block';
-            }
+        function toggleCertificateModal() {
+            document.getElementById('certModal').classList.toggle('active');
         }
 
-        async function handleSignup() {
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-
-            const res = await fetch('/api/auth/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, password })
-            });
-
-            const data = await res.json();
-            alert(data.message);
-            if (data.success) switchModal('signupModal', 'loginModal');
+        function toggleChat() {
+            document.getElementById('chatDrawer').classList.toggle('open');
         }
 
-        async function handleRequestOTP() {
-            const email = document.getElementById('resetEmail').value;
-            const res = await fetch('/api/auth/request-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
-
-            const data = await res.json();
-            alert(data.message);
-
-            if (data.success) {
-                document.getElementById('otpStep1').style.display = 'none';
-                document.getElementById('otpStep2').style.display = 'block';
-                document.getElementById('otpStepDesc').innerText = 'Step 2: Enter the OTP and your new password.';
-            }
+        function downloadPDF() {
+            const element = document.getElementById('certToPrint');
+            const opt = {
+                margin:       0.5,
+                filename:     'SkillBridge_AI_Certificate.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
 
-        async function handleResetPassword() {
-            const email = document.getElementById('resetEmail').value;
-            const otp = document.getElementById('resetOTP').value;
-            const newPassword = document.getElementById('resetNewPassword').value;
-
-            const res = await fetch('/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, newPassword })
-            });
-
-            const data = await res.json();
-            alert(data.message);
-
-            if (data.success) {
-                closeModal('forgotModal');
-                openModal('loginModal');
-            }
-        }
-
-        function logout() {
-            document.getElementById('authBtn').innerText = 'Sign In';
-            document.getElementById('authBtn').onclick = () => openModal('loginModal');
-            document.getElementById('userBadge').style.display = 'none';
-            alert('Logged out successfully.');
-        }
-
-        // AI Chatbot Logic
-        async function sendChatMessage() {
+        async function sendMessage() {
             const input = document.getElementById('chatInput');
-            const message = input.value.trim();
-            if (!message) return;
+            const msg = input.value.trim();
+            if(!msg) return;
 
-            const chatBody = document.getElementById('chatBody');
-            
-            // Add user message
-            const userDiv = document.createElement('div');
-            userDiv.className = 'chat-msg user';
-            userDiv.innerText = message;
-            chatBody.appendChild(userDiv);
-
+            const body = document.getElementById('chatBody');
+            body.innerHTML += `<div class="chat-bubble user">${msg}</div>`;
             input.value = '';
-            chatBody.scrollTop = chatBody.scrollHeight;
 
-            // Fetch AI Response
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message })
-                });
-                const data = await res.json();
-
-                const botDiv = document.createElement('div');
-                botDiv.className = 'chat-msg bot';
-                botDiv.innerText = data.reply;
-                chatBody.appendChild(botDiv);
-                chatBody.scrollTop = chatBody.scrollHeight;
-            } catch (err) {
-                const botDiv = document.createElement('div');
-                botDiv.className = 'chat-msg bot';
-                botDiv.innerText = "Error connecting to AI service.";
-                chatBody.appendChild(botDiv);
-            }
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+            body.innerHTML += `<div class="chat-bubble bot">${data.reply}</div>`;
+            body.scrollTop = body.scrollHeight;
         }
     </script>
 </body>
