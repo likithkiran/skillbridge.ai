@@ -5,10 +5,15 @@ const { GoogleGenAI } = require('@google/genai');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize Google Gen AI client with API key from environment variables
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
-});
+// Initialize Google Gen AI client safely
+const apiKey = process.env.GEMINI_API_KEY;
+let ai = null;
+
+if (apiKey) {
+  ai = new GoogleGenAI({ apiKey });
+} else {
+  console.warn("WARNING: GEMINI_API_KEY environment variable is missing.");
+}
 
 // Middleware
 app.use(express.json());
@@ -23,7 +28,13 @@ app.post('/api/chat', async (req, res) => {
       return res.status(400).json({ error: "Message is required." });
     }
 
-    // Call Gemini 2.5 Flash model
+    if (!ai) {
+      return res.status(500).json({ 
+        reply: "GEMINI_API_KEY is not configured on the server environment." 
+      });
+    }
+
+    // Generate response using Gemini 2.5 Flash
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: message,
@@ -38,17 +49,17 @@ app.post('/api/chat', async (req, res) => {
   } catch (error) {
     console.error("Gemini API Error:", error);
     res.status(500).json({ 
-      reply: "Sorry, I ran into an issue processing your request. Please ensure your GEMINI_API_KEY environment variable is set correctly." 
+      reply: "Error communicating with Gemini AI. Check server logs." 
     });
   }
 });
 
-// Express v5 Compatible Wildcard Route
-app.get(/(.*)/, (req, res) => {
+// Single Page Application Fallback Route (Express 4 & 5 Compatible)
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
