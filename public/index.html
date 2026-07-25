@@ -255,7 +255,7 @@
   <!-- Live Terminal Log Streamer -->
   <div class="term-drawer glass-card" id="term-logs">
     <div class="term-line info">[INIT] SkillBridge AI v10.0 Engine loaded with expanded track mappings.</div>
-    <div class="term-line">[SYS] Intelligent AI Bot, OTP Password Recovery & Verification Gate operational...</div>
+    <div class="term-line">[SYS] Intelligent Gemini AI Bot, OTP Password Recovery & Verification Gate operational...</div>
   </div>
 </div>
 
@@ -293,17 +293,17 @@
   </div>
 </div>
 
-<!-- Smart AI Mentor Drawer -->
+<!-- Smart AI Mentor Drawer (Gemini 1.5 Powered) -->
 <div id="ai-chat" class="ai-drawer glass-card" style="display:none;">
   <div class="ai-header">
     <div style="display:flex; align-items:center; gap:8px;">
       <span style="font-size:16px;">🤖</span>
-      <span class="mono pixel-font" style="font-size:11px; color:var(--purple);">SMART AI MENTOR</span>
+      <span class="mono pixel-font" style="font-size:11px; color:var(--purple);">GEMINI AI MENTOR</span>
     </div>
     <button onclick="toggleAiBot()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;">✕</button>
   </div>
   <div class="ai-messages mono" id="ai-msg-container">
-    <div class="msg-ai">Greetings! I am your Smart AI Technical Mentor. Ask me any technical question regarding code, concepts, HTML/CSS/JS syntax, system architecture, viva prep, or resume optimization!</div>
+    <div class="msg-ai">Greetings! I am your Smart AI Technical Mentor powered by Gemini 1.5. Ask me any technical question regarding code, concepts, HTML/CSS/JS syntax, system architecture, viva prep, or resume optimization!</div>
   </div>
   <div class="ai-input-area">
     <input type="text" id="ai-user-input" class="mono" placeholder="Ask AI a question..." onkeydown="if(event.key==='Enter') sendAiMessage()" />
@@ -1275,7 +1275,7 @@ function markIncomplete(skill) {
   render();
 }
 
-/* ---------------- DYNAMIC ACCURATE SMART AI MENTOR ENGINE ---------------- */
+/* ---------------- DYNAMIC ACCURATE GEMINI SMART AI MENTOR ENGINE ---------------- */
 function toggleAiBot() {
   const chat = document.getElementById('ai-chat');
   chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
@@ -1293,38 +1293,24 @@ async function sendAiMessage() {
 
   // Add temporary typing indicator
   const loadingId = 'loading-' + Date.now();
-  container.innerHTML += `<div class="msg-ai" id="${loadingId}"><em>🤖 AI is thinking...</em></div>`;
+  container.innerHTML += `<div class="msg-ai" id="${loadingId}"><em>🤖 Gemini AI is thinking...</em></div>`;
   container.scrollTop = container.scrollHeight;
 
   try {
-    // Calling Hugging Face Free Inference API (Qwen 2.5 Coder Model)
-    const response = await fetch("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-32B-Instruct/v1/chat/completions", {
+    // Calling backend Node.js Express server connected to Google Gemini API
+    const response = await fetch("/api/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        model: "Qwen/Qwen2.5-Coder-32B-Instruct",
-        messages: [
-          { 
-            role: "system", 
-            content: "You are Smart AI Mentor, an expert programming assistant on the SkillBridge AI platform. Provide clear, concise, accurate technical answers with formatted code snippets when requested." 
-          },
-          { 
-            role: "user", 
-            content: text 
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.7
-      })
+      body: JSON.stringify({ message: text })
     });
 
     const loadingElem = document.getElementById(loadingId);
 
     if (response.ok) {
       const data = await response.json();
-      let aiReply = data.choices[0].message.content;
+      let aiReply = data.reply || "No response generated.";
 
       // Format markdown code blocks into clean HTML <pre><code> for display
       aiReply = aiReply
@@ -1358,7 +1344,7 @@ function generateLocalFallbackResponse(query) {
   } else if (q.includes('css')) {
     return `<strong>CSS Rule Syntax:</strong><br/><br/><pre><code>selector {\n  property: value;\n  color: #00f2fe;\n}</code></pre>`;
   } else if (q.includes('js') || q.includes('javascript')) {
-    return `<strong>JavaScript Syntax:</strong><br/><br/><pre><code>const fetchData = async () => {\n  const res = await fetch('/api/data');\n  return await res.json();\n};</code></pre>`;
+    return `<strong>JavaScript Syntax:</strong><br/><br/><pre><code>const fetchData = async () => {\n  const res = await fetch('/api/chat');\n  return await res.json();\n};</code></pre>`;
   } else if (q.includes('python')) {
     return `<strong>Python Code Example:</strong><br/><br/><pre><code>def greet(name: str) -> str:\n    return f"Hello, {name}!"</code></pre>`;
   } else if (q.includes('sql')) {
