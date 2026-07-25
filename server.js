@@ -18,106 +18,76 @@ users.set('student@skillbridge.ai', { password: 'password123', name: 'Alex Devel
 
 // ================= AUTHENTICATION & OTP ENDPOINTS ================= //
 
-// 1. User Signup
 app.post('/api/auth/signup', (req, res) => {
     const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-        return res.status(400).json({ success: false, message: 'All fields are required.' });
-    }
-    if (users.has(email)) {
-        return res.status(400).json({ success: false, message: 'User already exists!' });
-    }
+    if (!name || !email || !password) return res.status(400).json({ success: false, message: 'All fields required.' });
+    if (users.has(email)) return res.status(400).json({ success: false, message: 'User already exists!' });
     users.set(email, { name, password });
-    return res.json({ success: true, message: 'Account created successfully! Please sign in.' });
+    return res.json({ success: true, message: 'Account created! Please sign in.' });
 });
 
-// 2. User Login
 app.post('/api/auth/login', (req, res) => {
     const { email, password } = req.body;
     const user = users.get(email);
-    if (!user || user.password !== password) {
-        return res.status(401).json({ success: false, message: 'Invalid email or password.' });
-    }
+    if (!user || user.password !== password) return res.status(401).json({ success: false, message: 'Invalid credentials.' });
     const token = 'jwt_' + crypto.randomBytes(16).toString('hex');
     return res.json({ success: true, token, name: user.name, message: 'Login successful!' });
 });
 
-// 3. Request OTP for Forgot Password
 app.post('/api/auth/request-otp', (req, res) => {
     const { email } = req.body;
-    if (!users.has(email)) {
-        return res.status(404).json({ success: false, message: 'No account registered with this email.' });
-    }
-    
+    if (!users.has(email)) return res.status(404).json({ success: false, message: 'No account registered with this email.' });
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 5 * 60 * 1000;
-    otpStore.set(email, { otp, expiresAt });
-
-    console.log(`[OTP GENERATED] Email: ${email} | OTP: ${otp}`);
-
-    return res.json({ 
-        success: true, 
-        message: `OTP sent successfully! (Demo OTP: ${otp})`,
-        demoOtp: otp 
-    });
+    otpStore.set(email, { otp, expiresAt: Date.now() + 5 * 60 * 1000 });
+    return res.json({ success: true, message: `OTP sent! (Demo OTP: ${otp})`, demoOtp: otp });
 });
 
-// 4. Verify OTP and Reset Password
 app.post('/api/auth/reset-password', (req, res) => {
     const { email, otp, newPassword } = req.body;
     const record = otpStore.get(email);
-
-    if (!record) {
-        return res.status(400).json({ success: false, message: 'OTP not requested or expired.' });
-    }
-    if (Date.now() > record.expiresAt) {
-        otpStore.delete(email);
-        return res.status(400).json({ success: false, message: 'OTP expired. Please request a new one.' });
-    }
-    if (record.otp !== otp) {
-        return res.status(400).json({ success: false, message: 'Invalid OTP code.' });
-    }
+    if (!record || Date.now() > record.expiresAt) return res.status(400).json({ success: false, message: 'OTP expired/invalid.' });
+    if (record.otp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP.' });
 
     const user = users.get(email);
     user.password = newPassword;
     users.set(email, user);
     otpStore.delete(email);
-
-    return res.json({ success: true, message: 'Password reset successful! You can now log in with your new password.' });
+    return res.json({ success: true, message: 'Password reset successful!' });
 });
 
-// ================= AI ASSISTANT ENDPOINT ================= //
+// ================= ENHANCED AI CHATBOT ================= //
 
 app.post('/api/chat', (req, res) => {
     const { message } = req.body;
-    if (!message) {
-        return res.status(400).json({ reply: "Please provide a valid question." });
-    }
+    if (!message) return res.status(400).json({ reply: "Please type a message." });
 
     const query = message.toLowerCase();
     let reply = "";
 
-    if (query.includes("roadmap") || query.includes("career")) {
-        reply = "SkillBridge AI recommends following our 6-module roadmap: Start with Fundamentals, move to Systems Architecture, master Database Optimization, and deploy via Cloud Infrastructure.";
-    } else if (query.includes("resume") || query.includes("ats")) {
-        reply = "To pass ATS filters, ensure your resume highlights quantifiable project achievements (e.g., 'Deployed Express API handling 10k hits/min') and keyword matches for your targeted stack.";
-    } else if (query.includes("certificate") || query.includes("cert")) {
-        reply = "You can earn your Master Certificate by completing 100% of your chosen domain track modules and passing the automated assessment!";
+    if (query.includes("frontend") && query.includes("backend")) {
+        reply = "Frontend focuses on UI/UX, DOM manipulation, CSS glassmorphism, and client-side logic (HTML/CSS/JS). Backend manages server logic, REST APIs, authentication, and databases (Express, Node.js).";
+    } else if (query.includes("frontend")) {
+        reply = "Frontend development involves HTML5, CSS3/Tailwind, JavaScript (ES6+), React/Vue, and API integration to build user interfaces.";
+    } else if (query.includes("backend")) {
+        reply = "Backend engineering involves API architecture, SQL/NoSQL databases, authentication/security protocols, server routing, and microservices.";
+    } else if (query.includes("course") || query.includes("track") || query.includes("module")) {
+        reply = "You can click on any Domain Card on the homepage to open the full module syllabus, estimated duration, and key learning outcomes!";
+    } else if (query.includes("certificate") || query.includes("cert") || query.includes("degree")) {
+        reply = "Click the '🎓 Certificate' button in the navigation bar or complete any course track to generate your official SkillBridge AI Verified Certificate!";
+    } else if (query.includes("roadmap") || query.includes("career")) {
+        reply = "Our structured learning paths guide you from Core Principles -> System Architecture -> Database Design -> Cloud Deployment.";
     } else if (query.includes("hi") || query.includes("hello") || query.includes("hey")) {
-        reply = "Hello! I am your SkillBridge AI Assistant. Ask me anything about career tracks, skill roadmaps, ATS resumes, or tech stacks!";
+        reply = "Hello! I am your SkillBridge AI Assistant. Ask me about frontend vs backend, course roadmaps, or how to generate your completion certificate!";
     } else {
-        reply = `I analyzed your query regarding "${message}". To excel in this area, focus on building hands-on projects, optimizing backend architecture, and practicing live deployment on cloud providers like Render!`;
+        reply = `SkillBridge AI Assistant: Regarding "${message}" — our curriculum focuses on production-ready skills, modern full-stack architectures, and automated certification! Select a domain card to start.`;
     }
 
     return res.json({ reply });
 });
 
-// Serve Frontend (Regex Catch-All for Express v5)
+// Serve Frontend
 app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
