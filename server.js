@@ -112,8 +112,8 @@ app.post('/api/chat', (req, res) => {
     return res.json({ reply });
 });
 
-// Serve Frontend (Fixed for Express v5)
-app.get('/*', (req, res) => {
+// Serve Frontend (Regex Catch-All for Express v5)
+app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
