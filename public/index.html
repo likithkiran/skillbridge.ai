@@ -210,6 +210,8 @@
   .msg-ai strong { color: var(--gold); }
   .msg-ai ul { padding-left: 18px; margin-top: 6px; }
   .msg-ai code { color: var(--mint); background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; }
+  .msg-ai pre { background: #020306; padding: 12px; border-radius: 6px; border: 1px solid var(--border); overflow-x: auto; margin-top: 8px; }
+  .msg-ai pre code { background: none; padding: 0; color: var(--mint); }
   .msg-user { background: rgba(0, 242, 254, 0.12); border: 1px solid var(--cyan); padding: 12px 16px; border-radius: 8px; align-self: flex-end; color: var(--text); max-width: 88%; }
   .ai-input-area { display: flex; padding: 14px; background: var(--panel); border-top: 1px solid var(--border); }
   .ai-input-area input { flex: 1; padding: 12px; background: var(--panel-alt); border: 1px solid var(--border); color: var(--text); border-radius: 6px; font-size: 13px; outline: none; }
@@ -301,7 +303,7 @@
     <button onclick="toggleAiBot()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;">✕</button>
   </div>
   <div class="ai-messages mono" id="ai-msg-container">
-    <div class="msg-ai">Greetings! I am your Smart AI Technical Mentor. Ask me any technical question regarding code, concepts, system architecture, viva prep, or resume optimization!</div>
+    <div class="msg-ai">Greetings! I am your Smart AI Technical Mentor. Ask me any technical question regarding code, concepts, HTML/CSS/JS syntax, system architecture, viva prep, or resume optimization!</div>
   </div>
   <div class="ai-input-area">
     <input type="text" id="ai-user-input" class="mono" placeholder="Ask AI a question..." onkeydown="if(event.key==='Enter') sendAiMessage()" />
@@ -1273,13 +1275,13 @@ function markIncomplete(skill) {
   render();
 }
 
-/* ---------------- ACCURATE INTELLIGENT AI ASSISTANT ---------------- */
+/* ---------------- DYNAMIC ACCURATE SMART AI MENTOR ENGINE ---------------- */
 function toggleAiBot() {
   const chat = document.getElementById('ai-chat');
   chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
 }
 
-function sendAiMessage() {
+async function sendAiMessage() {
   const input = document.getElementById('ai-user-input');
   const text = input.value.trim();
   if (!text) return;
@@ -1287,81 +1289,83 @@ function sendAiMessage() {
   const container = document.getElementById('ai-msg-container');
   container.innerHTML += `<div class="msg-user">${text}</div>`;
   input.value = '';
+  container.scrollTop = container.scrollHeight;
 
-  setTimeout(() => {
-    const q = text.toLowerCase();
-    let reply = "";
+  // Add temporary typing indicator
+  const loadingId = 'loading-' + Date.now();
+  container.innerHTML += `<div class="msg-ai" id="${loadingId}"><em>🤖 AI is thinking...</em></div>`;
+  container.scrollTop = container.scrollHeight;
 
-    if (q.includes('full form') || q.includes('what is llm') || q.includes('llm stand for')) {
-      reply = `<strong>Large Language Model (LLM)</strong><br/><br/>
-      An <strong>LLM</strong> is a deep learning architecture (primarily based on <em>Transformers</em>) trained on massive text corpora to process and generate human-like language.
-      <ul>
-        <li><strong>Examples:</strong> GPT-4, Gemini, Claude 3.5, Llama 3.</li>
-        <li><strong>Key Mechanics:</strong> Self-Attention, Tokenization, High-Dimensional Vector Embeddings.</li>
-      </ul>`;
-    } else if (q.includes('rag') || q.includes('retrieval augmented')) {
-      reply = `<strong>Retrieval-Augmented Generation (RAG)</strong><br/><br/>
-      RAG injects verified external document chunks from a <strong>Vector Database</strong> directly into the LLM prompt context to guarantee factual precision and prevent hallucinations.
-      <ul>
-        <li><strong>Pipeline:</strong> Chunking → Embeddings → Cosine Similarity Search → Context Ingestion.</li>
-      </ul>`;
-    } else if (q.includes('react') || q.includes('hook') || q.includes('state')) {
-      reply = `<strong>React Virtual DOM & State Architecture:</strong><br/><br/>
-      React updates user interfaces declaratively by performing Virtual DOM reconciliation.
-      <ul>
-        <li><code>useState</code>: Manages component state.</li>
-        <li><code>useEffect</code>: Handles async network requests or side effects.</li>
-      </ul>
-      <code>const [state, setState] = useState(initialVal);</code>`;
-    } else if (q.includes('node') || q.includes('express') || q.includes('backend') || q.includes('api')) {
-      reply = `<strong>Node.js & Express REST APIs:</strong><br/><br/>
-      Node handles thousands of concurrent requests asynchronously via libuv's Event Loop.
-      <ul>
-        <li><strong>Middleware:</strong> Intercepts and parses incoming HTTP payloads.</li>
-        <li><strong>JWT Bearer Auth:</strong> Guarantees stateless authentication headers.</li>
-      </ul>`;
-    } else if (q.includes('python') || q.includes('pytorch') || q.includes('machine learning')) {
-      reply = `<strong>Python & AI Engineering:</strong><br/><br/>
-      Python serves as the dominant language for Machine Learning and AI workflows.
-      <ul>
-        <li><strong>PyTorch:</strong> Provides dynamic computational graphs with GPU acceleration.</li>
-        <li><strong>Scikit-Learn:</strong> Powers classical classification algorithms and loss optimization.</li>
-      </ul>`;
-    } else if (q.includes('sql') || q.includes('database') || q.includes('postgres')) {
-      reply = `<strong>SQL Relational Databases & Indexing:</strong><br/><br/>
-      SQL databases guarantee ACID compliance for transactions.
-      <ul>
-        <li><strong>B-Tree Indexes:</strong> Reduces lookup times from O(N) to O(log N).</li>
-        <li><strong>Parameterized Queries:</strong> Neutralizes SQL Injection (SQLi) vulnerabilities.</li>
-      </ul>`;
-    } else if (q.includes('docker') || q.includes('kubernetes') || q.includes('devops')) {
-      reply = `<strong>Containerization & Cloud Infrastructure:</strong><br/><br/>
-      Docker creates isolated, reproducible application containers.
-      <ul>
-        <li><strong>Kubernetes:</strong> Automates container scaling, self-healing, and load balancing across nodes.</li>
-      </ul>`;
-    } else if (q.includes('viva') || q.includes('exam') || q.includes('quiz') || q.includes('test')) {
-      reply = `<strong>AI Viva Preparation Tips:</strong><br/><br/>
-      To pass your track vivas with 100% scores:
-      <ul>
-        <li>Review the <strong>Core Concepts</strong> and <strong>Execution Mechanics</strong> inside each expanded skill node.</li>
-        <li>Examine the code snippets and architecture diagrams before choosing your MCQ answers.</li>
-      </ul>`;
+  try {
+    // Calling Hugging Face Free Inference API (Qwen 2.5 Coder Model)
+    const response = await fetch("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-Coder-32B-Instruct/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "Qwen/Qwen2.5-Coder-32B-Instruct",
+        messages: [
+          { 
+            role: "system", 
+            content: "You are Smart AI Mentor, an expert programming assistant on the SkillBridge AI platform. Provide clear, concise, accurate technical answers with formatted code snippets when requested." 
+          },
+          { 
+            role: "user", 
+            content: text 
+          }
+        ],
+        max_tokens: 500,
+        temperature: 0.7
+      })
+    });
+
+    const loadingElem = document.getElementById(loadingId);
+
+    if (response.ok) {
+      const data = await response.json();
+      let aiReply = data.choices[0].message.content;
+
+      // Format markdown code blocks into clean HTML <pre><code> for display
+      aiReply = aiReply
+        .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+          return `<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+        })
+        .replace(/\n/g, '<br/>');
+
+      loadingElem.innerHTML = `<strong>Smart AI Assistant:</strong><br/><br/>${aiReply}`;
     } else {
-      reply = `<strong>Smart AI Technical Assistant:</strong><br/><br/>
-      I have processed your query regarding: <em>"${text}"</em>.<br/><br/>
-      <strong>Key Recommendation:</strong>
-      <ul>
-        <li>Expand your active track modules to inspect system diagrams and official documentation.</li>
-        <li>Break down your task into smaller, modular functions and test each block incrementally.</li>
-      </ul>
-      Feel free to ask me for specific code snippets, debugging assistance, or architecture designs!`;
+      loadingElem.innerHTML = generateLocalFallbackResponse(text);
     }
+  } catch (err) {
+    console.error("AI API Error:", err);
+    const loadingElem = document.getElementById(loadingId);
+    if (loadingElem) {
+      loadingElem.innerHTML = generateLocalFallbackResponse(text);
+    }
+  }
 
-    container.innerHTML += `<div class="msg-ai">${reply}</div>`;
-    container.scrollTop = container.scrollHeight;
-    playBeep('success');
-  }, 500);
+  container.scrollTop = container.scrollHeight;
+  playBeep('success');
+}
+
+// Local smart fallback generator if offline or rate limited
+function generateLocalFallbackResponse(query) {
+  const q = query.toLowerCase();
+  
+  if (q.includes('html')) {
+    return `<strong>HTML Document Syntax:</strong><br/><br/><pre><code>&lt;!DOCTYPE html&gt;\n&lt;html lang="en"&gt;\n&lt;head&gt;\n  &lt;meta charset="UTF-8"&gt;\n  &lt;title&gt;Sample Page&lt;/title&gt;\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;h1&gt;Hello World&lt;/h1&gt;\n&lt;/body&gt;\n&lt;/html&gt;</code></pre>`;
+  } else if (q.includes('css')) {
+    return `<strong>CSS Rule Syntax:</strong><br/><br/><pre><code>selector {\n  property: value;\n  color: #00f2fe;\n}</code></pre>`;
+  } else if (q.includes('js') || q.includes('javascript')) {
+    return `<strong>JavaScript Syntax:</strong><br/><br/><pre><code>const fetchData = async () => {\n  const res = await fetch('/api/data');\n  return await res.json();\n};</code></pre>`;
+  } else if (q.includes('python')) {
+    return `<strong>Python Code Example:</strong><br/><br/><pre><code>def greet(name: str) -> str:\n    return f"Hello, {name}!"</code></pre>`;
+  } else if (q.includes('sql')) {
+    return `<strong>SQL Query Syntax:</strong><br/><br/><pre><code>SELECT id, username FROM users WHERE status = 'active';</code></pre>`;
+  }
+
+  return `<strong>Smart AI Assistant:</strong><br/><br/>To solve or answer <em>"${query}"</em>:<br/><ul><li>Verify your syntax and ensure all closing tags/brackets match.</li><li>Check the official documentation links under your active learning track module.</li></ul>`;
 }
 
 /* ---------------- RENDER DISPATCHER ---------------- */
