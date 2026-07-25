@@ -259,29 +259,13 @@
             body.innerHTML += `<div class="chat-bubble user">${msg}</div>`;
             input.value = '';
 
-            try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ message: msg })
-                });
-                
-                if(res.ok) {
-                    const data = await res.json();
-                    body.innerHTML += `<div class="chat-bubble bot">${data.reply}</div>`;
-                } else {
-                    // Fallback response for demo mode if backend is not connected
-                    setTimeout(() => {
-                        body.innerHTML += `<div class="chat-bubble bot">Backend not connected yet. (Connect an API route to <code>/api/chat</code> to process messages)</div>`;
-                        body.scrollTop = body.scrollHeight;
-                    }, 500);
-                }
-            } catch (err) {
-                 setTimeout(() => {
-                    body.innerHTML += `<div class="chat-bubble bot"><em>System Offline: Ensure your backend server is running to answer queries.</em></div>`;
-                    body.scrollTop = body.scrollHeight;
-                }, 500);
-            }
+            const res = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await res.json();
+            body.innerHTML += `<div class="chat-bubble bot">${data.reply}</div>`;
             body.scrollTop = body.scrollHeight;
         }
     </script>
