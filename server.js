@@ -1,81 +1,54 @@
 const express = require('express');
 const path = require('path');
-const https = require('https');
+const { GoogleGenAI } = require('@google/genai');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Gemini API Key
-const GEMINI_API_KEY = "AQ.Ab8RN6LyNNGiV6-wkAtjSWz5qujwPavFnZn8j_gfNfiBuusQ2w";
+// Initialize Google Gen AI client with API key from environment variables
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY
+});
 
+// Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// AI Assistant API Route
-app.post('/api/chat', (req, res) => {
-  const { message } = req.body;
+// Smart AI Mentor API Route
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message } = req.body;
 
-  if (!message) {
-    return res.status(400).json({ error: "Message is required" });
-  }
-
-  const payload = JSON.stringify({
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: `You are Smart AI Mentor on the SkillBridge AI platform. Provide clear, accurate technical guidance for: ${message}` }]
-      }
-    ]
-  });
-
-  const options = {
-    hostname: 'generativelanguage.googleapis.com',
-    path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: "Message is required." });
     }
-  };
 
-  const apiReq = https.request(options, (apiRes) => {
-    let data = '';
-
-    apiRes.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    apiRes.on('end', () => {
-      try {
-        const parsedData = JSON.parse(data);
-        if (apiRes.statusCode >= 200 && apiRes.statusCode < 300) {
-          const reply = parsedData.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-          res.json({ reply });
-        } else {
-          console.error("Gemini API Error:", parsedData);
-          res.status(500).json({ reply: "Sorry, I encountered an issue connecting to the Gemini AI API." });
-        }
-      } catch (e) {
-        console.error("JSON Parse Error:", e);
-        res.status(500).json({ reply: "Error parsing AI response." });
+    // Call Gemini 2.5 Flash model
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: message,
+      config: {
+        systemInstruction: "You are the Smart AI Mentor on the SkillBridge AI platform. Answer any technical, career, or learning question thoroughly, accurately, and provide formatted code snippets whenever requested."
       }
     });
-  });
 
-  apiReq.on('error', (error) => {
-    console.error("HTTPS Request Error:", error);
-    res.status(500).json({ reply: "Internal server error connecting to AI Mentor." });
-  });
+    const reply = response.text || "No response received from AI.";
+    res.json({ reply });
 
-  apiReq.write(payload);
-  apiReq.end();
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    res.status(500).json({ 
+      reply: "Sorry, I ran into an issue processing your request. Please ensure your GEMINI_API_KEY environment variable is set correctly." 
+    });
+  }
 });
 
-// Fallback route for Express v5
+// Express v5 Compatible Wildcard Route
 app.get(/(.*)/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Start Server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
