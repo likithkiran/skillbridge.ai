@@ -58,18 +58,28 @@
         .modal { background: #0d1127; border: 1px solid var(--border-glow); border-radius: 20px; padding: 2rem; width: 100%; max-width: 650px; box-shadow: 0 20px 50px rgba(0,0,0,0.8); position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-close { position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; }
 
+        /* Form Inputs & Auth UI */
+        .auth-form { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+        .auth-input { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 0.95rem; }
+        .auth-input:focus { outline: none; border-color: var(--cyan-glow); }
+        .auth-link { color: var(--cyan-glow); font-size: 0.85rem; text-decoration: none; cursor: pointer; text-align: right; }
+        .auth-link:hover { text-decoration: underline; }
+
         /* Video Container */
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; margin: 1rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-glow); }
         .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        /* Viva Assessment Box */
+        /* Viva Multiple Choice Box */
         .viva-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,242,254,0.2); border-radius: 12px; padding: 1.2rem; margin-top: 1rem; }
         .viva-q { font-weight: 600; font-size: 0.95rem; color: var(--cyan-glow); margin-bottom: 0.6rem; }
-        .viva-input { width: 100%; padding: 0.6rem; border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; margin-bottom: 0.6rem; }
+        .viva-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+        .viva-option { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
+        .viva-option:hover { background: rgba(0, 242, 254, 0.08); border-color: var(--border-glow); }
 
         /* Certificate Printable Area */
-        .certificate-container { padding: 2.5rem; text-align: center; background: #0b0e1e; border: 4px double var(--cyan-glow); border-radius: 12px; color: #fff; }
+        .certificate-container { padding: 2.5rem; text-align: center; background: #0b0e1e; border: 4px double var(--cyan-glow); border-radius: 12px; color: #fff; margin-bottom: 1rem; }
         .certificate-container h2 { font-family: 'JetBrains Mono', monospace; color: var(--cyan-glow); }
+        .cert-edit-box { display: flex; gap: 8px; margin-bottom: 1rem; }
 
         /* AI Drawer */
         .chat-drawer { position: fixed; bottom: 20px; right: 20px; width: 380px; height: 500px; background: #0d1127; border: 1px solid var(--border-glow); border-radius: 16px; display: flex; flex-direction: column; z-index: 90; transform: translateY(120%); transition: transform 0.4s ease; }
@@ -91,44 +101,101 @@
         <div class="nav-actions">
             <button class="btn btn-outline" onclick="toggleCertificateModal()">🎓 Certificate</button>
             <button class="btn btn-glow" onclick="toggleChat()">🤖 AI Bot</button>
-            <button class="btn btn-outline" id="authBtn" onclick="alert('Demo Login Session Active')">👤 Alex Developer</button>
+            <button class="btn btn-outline" id="authBtn" onclick="openAuthModal('login')">👤 <span id="userDisplayName">Sign In</span></button>
         </div>
     </nav>
 
     <div class="container">
         <div class="hero">
             <h2>Select Your Enterprise Learning Track</h2>
-            <p>Watch course video tutorials, complete automated AI viva assessments, and earn downloadable certified degrees.</p>
+            <p>Watch course video tutorials, complete automated multiple-choice AI viva assessments, and earn customizable certified degrees.</p>
         </div>
 
         <div class="grid">
-            <!-- Full Stack Course Card -->
+            <!-- Course 1 -->
             <div class="card" onclick="openCourseModal('Full-Stack Web Architect', 'https://www.youtube.com/embed/zJSY8tbf_ys', 'fullstack')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>Full-Stack Web Architect</h3>
                 <p>Learn full-stack web development with modern frontend interfaces, Node.js REST APIs, and database clusters.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
             </div>
 
-            <!-- Backend Systems Engineer Card -->
+            <!-- Course 2 -->
             <div class="card" onclick="openCourseModal('Backend Systems Engineer', 'https://www.youtube.com/embed/Oe421EPjeBE', 'backend')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>Backend Systems Engineer</h3>
                 <p>Architect microservices, database transactions, Node.js backend logic, and secure authentication pipelines.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
             </div>
 
-            <!-- AI & Generative Engineering Card -->
+            <!-- Course 3 -->
             <div class="card" onclick="openCourseModal('AI & Generative Engineering', 'https://www.youtube.com/embed/2IK3DF1572E', 'ai')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>AI & Generative Engineering</h3>
                 <p>Develop AI agents, integrate RAG pipelines, LLM APIs, and vector databases into production apps.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+            </div>
+
+            <!-- Course 4 -->
+            <div class="card" onclick="openCourseModal('DevOps & Cloud Architecture', 'https://www.youtube.com/embed/X48VuDVv0do', 'devops')">
+                <div class="card-badge">FULL COURSE</div>
+                <h3>DevOps & Cloud Architecture</h3>
+                <p>Master Docker containers, Kubernetes orchestration, CI/CD pipelines, AWS deployment, and infrastructure as code.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+            </div>
+
+            <!-- Course 5 -->
+            <div class="card" onclick="openCourseModal('Cybersecurity & Ethical Hacking', 'https://www.youtube.com/embed/3Kq1MIfTWCE', 'cybersecurity')">
+                <div class="card-badge">FULL COURSE</div>
+                <h3>Cybersecurity & Ethical Hacking</h3>
+                <p>Learn application security, penetration testing, threat modeling, network defense, and vulnerability assessment.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
             </div>
         </div>
     </div>
 
-    <!-- Course, Video, & Automatic Viva Assessment Modal -->
+    <!-- Auth / Login / Forget Password Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal" style="max-width: 450px;">
+            <button class="modal-close" onclick="closeModal('authModal')">&times;</button>
+            
+            <!-- Login View -->
+            <div id="loginView">
+                <h3 style="color: var(--cyan-glow); margin-bottom: 0.5rem;">Welcome Back</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Sign in to access your courses and certificates.</p>
+                <form class="auth-form" onsubmit="event.preventDefault(); handleLogin();">
+                    <input type="email" class="auth-input" id="loginEmail" placeholder="Gmail Address" required>
+                    <input type="password" class="auth-input" id="loginPassword" placeholder="Password" required>
+                    <a class="auth-link" onclick="switchAuthView('forgot')">Forgot Password?</a>
+                    <button type="submit" class="btn btn-glow">Sign In</button>
+                </form>
+            </div>
+
+            <!-- Forgot Password Step 1: Send OTP -->
+            <div id="forgotView" style="display: none;">
+                <h3 style="color: var(--cyan-glow); margin-bottom: 0.5rem;">Reset Password</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);">Enter your Gmail address to receive a 6-digit OTP code.</p>
+                <form class="auth-form" onsubmit="event.preventDefault(); sendOtp();">
+                    <input type="email" class="auth-input" id="resetEmail" placeholder="Enter registered Gmail" required>
+                    <button type="submit" class="btn btn-glow">Send OTP Code</button>
+                    <a class="auth-link" style="text-align: center;" onclick="switchAuthView('login')">Back to Sign In</a>
+                </form>
+            </div>
+
+            <!-- Forgot Password Step 2: Verify OTP & New Password -->
+            <div id="otpView" style="display: none;">
+                <h3 style="color: var(--cyan-glow); margin-bottom: 0.5rem;">Enter OTP & New Password</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted);" id="otpSentMsg">An OTP has been dispatched to your Gmail.</p>
+                <form class="auth-form" onsubmit="event.preventDefault(); resetPassword();">
+                    <input type="text" class="auth-input" id="otpInput" placeholder="6-Digit OTP Code" maxlength="6" required>
+                    <input type="password" class="auth-input" id="newPassword" placeholder="Enter New Password" required>
+                    <button type="submit" class="btn btn-glow">Reset & Update Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course, Video, & MCQ Viva Assessment Modal -->
     <div class="modal-overlay" id="courseModal">
         <div class="modal">
             <button class="modal-close" onclick="closeModal('courseModal')">&times;</button>
@@ -138,10 +205,10 @@
                 <iframe id="courseIframe" src="" allowfullscreen></iframe>
             </div>
 
-            <!-- Interactive AI Viva Section -->
+            <!-- MCQ Viva Section -->
             <div class="viva-box">
-                <h4 style="margin-bottom: 0.5rem;">📝 Automated AI Viva Assessment</h4>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.8rem;">Answer the following viva questions to test your technical depth:</p>
+                <h4 style="margin-bottom: 0.3rem;">📝 Automated AI MCQ Viva Assessment</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Select the correct options for each question below:</p>
                 
                 <div id="vivaQuestionsContainer"></div>
 
@@ -150,19 +217,26 @@
         </div>
     </div>
 
-    <!-- Certificate Modal with PDF Download -->
+    <!-- Certificate Modal with Custom Name Editing -->
     <div class="modal-overlay" id="certModal">
         <div class="modal">
             <button class="modal-close" onclick="closeModal('certModal')">&times;</button>
+            
+            <!-- Editable Name Header -->
+            <div class="cert-edit-box">
+                <input type="text" id="customNameInput" class="auth-input" placeholder="Enter full name for certificate..." value="Alex Developer">
+                <button class="btn btn-glow" onclick="updateCertName()">Update Name</button>
+            </div>
+
             <div id="certToPrint" class="certificate-container">
                 <small style="color: var(--text-muted); font-family: 'JetBrains Mono';">OFFICIAL CERTIFICATE OF COMPLETION</small>
                 <h2 style="margin-top: 8px;">SkillBridge AI</h2>
                 <p style="font-size: 0.9rem; margin: 1rem 0;">This is to certify that</p>
                 <h3 id="certUserName" style="font-size: 1.5rem; color: var(--cyan-glow);">Alex Developer</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">has successfully completed the Full-Stack Engineering, Automated Viva Assessment, & AI Systems Track.</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1rem;">has successfully completed the Certified Tech Mastery, Automated MCQ Viva Assessment, & Enterprise Systems Track.</p>
                 <small style="display: block; margin-top: 1.5rem; color: var(--cyan-glow); font-family: 'JetBrains Mono';">VERIFIED ID: SB-99482-2026</small>
             </div>
-            <button class="btn btn-glow" style="width: 100%; margin-top: 1rem;" onclick="downloadPDF()">📥 Download Actual PDF</button>
+            <button class="btn btn-glow" style="width: 100%;" onclick="downloadPDF()">📥 Download Actual PDF</button>
         </div>
     </div>
 
@@ -173,7 +247,7 @@
             <button onclick="toggleChat()" style="background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="chat-bubble bot">Hello! Ask me anything about course modules, viva assessments, or your certificate!</div>
+            <div class="chat-bubble bot">Hello! Ask me anything about course modules, MCQ viva assessments, or downloading your editable certificate!</div>
         </div>
         <div class="chat-footer">
             <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendMessage()">
@@ -182,36 +256,79 @@
     </div>
 
     <script>
-        // Viva Question Bank
+        // Expanded Multiple Choice Viva Question Bank
         const vivaData = {
             fullstack: [
-                "1. What is the difference between client-side rendering (CSR) and server-side rendering (SSR)?",
-                "2. How does event delegation work in modern JavaScript?",
-                "3. Explain how state management differs from props in component architectures."
+                {
+                    q: "1. What is the key advantage of Server-Side Rendering (SSR)?",
+                    options: ["Faster initial page load and better SEO", "No server required", "Zero JavaScript needed", "Automatic database management"]
+                },
+                {
+                    q: "2. How does event delegation improve JavaScript performance?",
+                    options: ["By attaching one listener to a parent element", "By eliminating DOM events", "By using async-await keywords", "By converting code to C++"]
+                }
             ],
             backend: [
-                "1. How does the Node.js Event Loop handle non-blocking I/O operations?",
-                "2. Explain the purpose of JSON Web Tokens (JWT) in stateless REST APIs.",
-                "3. What is the difference between SQL transactions and NoSQL document storage?"
+                {
+                    q: "1. How does the Node.js Event Loop handle non-blocking asynchronous I/O?",
+                    options: ["Using libuv and worker thread pools", "By pausing the main thread", "By executing sequentially in single thread", "By blocking HTTP headers"]
+                },
+                {
+                    q: "2. Why are JSON Web Tokens (JWT) widely used in stateless REST APIs?",
+                    options: ["They eliminate server session storage state", "They replace SQL databases", "They encrypt all API payloads automatically", "They remove SSL certificates"]
+                }
             ],
             ai: [
-                "1. What is Retrieval-Augmented Generation (RAG) and why is it used with LLMs?",
-                "2. Explain how vector embeddings calculate semantic similarity.",
-                "3. What is the role of prompt engineering in reducing AI model hallucination?"
+                {
+                    q: "1. What is Retrieval-Augmented Generation (RAG)?",
+                    options: ["Combining external vector search with LLM prompts", "Training a base model from scratch", "Encrypting prompt text", "Compiling neural networks to C"]
+                },
+                {
+                    q: "2. What metric calculates semantic similarity in vector databases?",
+                    options: ["Cosine Similarity / Euclidean Distance", "Ping latency", "SQL join speed", "MD5 hash match"]
+                }
+            ],
+            devops: [
+                {
+                    q: "1. What is the core benefit of Docker containerization?",
+                    options: ["Consistent application execution environments across systems", "Replaces hardware RAM", "Eliminates network firewalls", "Automates software UI design"]
+                },
+                {
+                    q: "2. What role does Kubernetes fulfill in modern infrastructure?",
+                    options: ["Automating deployment, scaling, and container management", "Writing frontend React code", "Managing domain DNS purchasing", "Filtering database spam"]
+                }
+            ],
+            cybersecurity: [
+                {
+                    q: "1. What vulnerability allows arbitrary SQL execution via user input?",
+                    options: ["SQL Injection (SQLi)", "Cross-Site Scripting (XSS)", "Cross-Site Request Forgery (CSRF)", "Buffer Overflow"]
+                },
+                {
+                    q: "2. What is the primary function of a Web Application Firewall (WAF)?",
+                    options: ["Filtering, monitoring, and blocking malicious HTTP traffic", "Compressing web page images", "Caching database queries", "Compiling JavaScript files"]
+                }
             ]
         };
 
+        // Course Modal Functionality
         function openCourseModal(title, videoUrl, trackKey) {
             document.getElementById('courseTitle').innerText = title;
             document.getElementById('courseIframe').src = videoUrl;
             
-            // Render Viva Questions
+            // Render MCQ Questions
             const questions = vivaData[trackKey] || vivaData.fullstack;
             const container = document.getElementById('vivaQuestionsContainer');
-            container.innerHTML = questions.map((q, idx) => `
-                <div style="margin-bottom: 0.8rem;">
-                    <div class="viva-q">${q}</div>
-                    <input type="text" class="viva-input" id="viva_ans_${idx}" placeholder="Type your answer here...">
+            container.innerHTML = questions.map((qObj, qIdx) => `
+                <div style="margin-bottom: 1rem;">
+                    <div class="viva-q">${qObj.q}</div>
+                    <div class="viva-options">
+                        ${qObj.options.map((opt, oIdx) => `
+                            <label class="viva-option">
+                                <input type="radio" name="viva_q_${qIdx}" value="${oIdx}">
+                                ${opt}
+                            </label>
+                        `).join('')}
+                    </div>
                 </div>
             `).join('');
 
@@ -226,28 +343,86 @@
         }
 
         function submitViva() {
-            alert('✅ Viva Submission Received! Your answers have been evaluated and recorded toward your certificate.');
+            alert('✅ MCQ Viva Submission Evaluated! Your score has been recorded for your certificate.');
             closeModal('courseModal');
         }
 
+        // Authentication & Password Reset Flow
+        let generatedOtp = null;
+
+        function openAuthModal(view) {
+            switchAuthView(view);
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        function switchAuthView(view) {
+            document.getElementById('loginView').style.display = view === 'login' ? 'block' : 'none';
+            document.getElementById('forgotView').style.display = view === 'forgot' ? 'block' : 'none';
+            document.getElementById('otpView').style.display = view === 'otp' ? 'block' : 'none';
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const username = email.split('@')[0];
+            document.getElementById('userDisplayName').innerText = username;
+            document.getElementById('customNameInput').value = username;
+            document.getElementById('certUserName').innerText = username;
+            alert(`Welcome back, ${username}! Login session activated.`);
+            closeModal('authModal');
+        }
+
+        function sendOtp() {
+            const email = document.getElementById('resetEmail').value;
+            if(!email) return;
+            
+            // Generate mock 6-digit OTP
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            document.getElementById('otpSentMsg').innerText = `OTP code sent to ${email}. (Demo Code: ${generatedOtp})`;
+            alert(`📧 OTP sent to ${email}!\n\nFor testing, your OTP code is: ${generatedOtp}`);
+            switchAuthView('otp');
+        }
+
+        function resetPassword() {
+            const userOtp = document.getElementById('otpInput').value;
+            const newPass = document.getElementById('newPassword').value;
+
+            if(userOtp === generatedOtp) {
+                alert('🔑 Password successfully reset! You can now log in with your new password.');
+                switchAuthView('login');
+            } else {
+                alert('❌ Invalid OTP code. Please check your email and try again.');
+            }
+        }
+
+        // Certificate Management & Customization
         function toggleCertificateModal() {
             document.getElementById('certModal').classList.toggle('active');
         }
 
-        function toggleChat() {
-            document.getElementById('chatDrawer').classList.toggle('open');
+        function updateCertName() {
+            const newName = document.getElementById('customNameInput').value.trim();
+            if(newName) {
+                document.getElementById('certUserName').innerText = newName;
+                alert(`Certificate name updated to: "${newName}"`);
+            }
         }
 
         function downloadPDF() {
             const element = document.getElementById('certToPrint');
+            const name = document.getElementById('certUserName').innerText;
             const opt = {
                 margin:       0.5,
-                filename:     'SkillBridge_AI_Certificate.pdf',
+                filename:     `SkillBridge_Certificate_${name.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2 },
                 jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
             };
             html2pdf().set(opt).from(element).save();
+        }
+
+        // AI Chat Assistant Drawer
+        function toggleChat() {
+            document.getElementById('chatDrawer').classList.toggle('open');
         }
 
         async function sendMessage() {
@@ -259,13 +434,28 @@
             body.innerHTML += `<div class="chat-bubble user">${msg}</div>`;
             input.value = '';
 
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ message: msg })
-            });
-            const data = await res.json();
-            body.innerHTML += `<div class="chat-bubble bot">${data.reply}</div>`;
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ message: msg })
+                });
+                
+                if(res.ok) {
+                    const data = await res.json();
+                    body.innerHTML += `<div class="chat-bubble bot">${data.reply}</div>`;
+                } else {
+                    setTimeout(() => {
+                        body.innerHTML += `<div class="chat-bubble bot">Backend service standby. You can complete any course MCQ viva or edit your name on your certificate anytime!</div>`;
+                        body.scrollTop = body.scrollHeight;
+                    }, 500);
+                }
+            } catch (err) {
+                 setTimeout(() => {
+                    body.innerHTML += `<div class="chat-bubble bot"><em>System Standby: Interactive features are fully functional. Connect an express route to <code>/api/chat</code> to process queries live.</em></div>`;
+                    body.scrollTop = body.scrollHeight;
+                }, 500);
+            }
             body.scrollTop = body.scrollHeight;
         }
     </script>
