@@ -69,12 +69,16 @@
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; margin: 1rem 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-glow); }
         .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
 
-        /* Viva Multiple Choice Box */
+        /* Viva Multiple Choice & Notes Box */
         .viva-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(0,242,254,0.2); border-radius: 12px; padding: 1.2rem; margin-top: 1rem; }
         .viva-q { font-weight: 600; font-size: 0.95rem; color: var(--cyan-glow); margin-bottom: 0.6rem; }
         .viva-options { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
         .viva-option { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: var(--text-main); cursor: pointer; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); }
         .viva-option:hover { background: rgba(0, 242, 254, 0.08); border-color: var(--border-glow); }
+
+        .notes-container { background: rgba(0, 242, 254, 0.05); border: 1px solid var(--border-glow); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: none; }
+        .notes-container h5 { color: var(--cyan-glow); margin-bottom: 0.5rem; }
+        .notes-container pre { white-space: pre-wrap; font-size: 0.85rem; color: var(--text-muted); font-family: 'Inter', sans-serif; }
 
         /* Certificate Printable Area */
         .certificate-container { padding: 2.5rem; text-align: center; background: #0b0e1e; border: 4px double var(--cyan-glow); border-radius: 12px; color: #fff; margin-bottom: 1rem; }
@@ -99,6 +103,7 @@
     <nav>
         <div class="logo"><span>SB-v10.0</span>SkillBridge AI</div>
         <div class="nav-actions">
+            <button class="btn btn-outline" onclick="openResumeModal()">📄 Resume & Skill Analyzer</button>
             <button class="btn btn-outline" onclick="toggleCertificateModal()">🎓 Certificate</button>
             <button class="btn btn-glow" onclick="toggleChat()">🤖 AI Bot</button>
             <button class="btn btn-outline" id="authBtn" onclick="openAuthModal('login')">👤 <span id="userDisplayName">Sign In</span></button>
@@ -108,16 +113,24 @@
     <div class="container">
         <div class="hero">
             <h2>Select Your Enterprise Learning Track</h2>
-            <p>Watch course video tutorials, complete automated multiple-choice AI viva assessments, and earn customizable certified degrees.</p>
+            <p>Watch video tutorials, read study notes, take MCQ vivas, analyze your resume skills, and earn customizable certificates.</p>
         </div>
 
         <div class="grid">
+            <!-- Resume & Skill Analyzer Hub Card -->
+            <div class="card" onclick="openResumeModal()" style="border-color: var(--cyan-glow); background: rgba(0, 242, 254, 0.05);">
+                <div class="card-badge">CAREER HUB</div>
+                <h3>📄 Resume & Skill Gap Analyzer</h3>
+                <p>Paste your resume to automatically extract technical skills, highlight keywords, and see course recommendations.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">⚡ Analyze Your Resume →</div>
+            </div>
+
             <!-- Course 1 -->
             <div class="card" onclick="openCourseModal('Full-Stack Web Architect', 'https://www.youtube.com/embed/zJSY8tbf_ys', 'fullstack')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>Full-Stack Web Architect</h3>
                 <p>Learn full-stack web development with modern frontend interfaces, Node.js REST APIs, and database clusters.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Study Notes, Video & Viva →</div>
             </div>
 
             <!-- Course 2 -->
@@ -125,7 +138,7 @@
                 <div class="card-badge">FULL COURSE</div>
                 <h3>Backend Systems Engineer</h3>
                 <p>Architect microservices, database transactions, Node.js backend logic, and secure authentication pipelines.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Study Notes, Video & Viva →</div>
             </div>
 
             <!-- Course 3 -->
@@ -133,23 +146,40 @@
                 <div class="card-badge">FULL COURSE</div>
                 <h3>AI & Generative Engineering</h3>
                 <p>Develop AI agents, integrate RAG pipelines, LLM APIs, and vector databases into production apps.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Study Notes, Video & Viva →</div>
             </div>
 
             <!-- Course 4 -->
             <div class="card" onclick="openCourseModal('DevOps & Cloud Architecture', 'https://www.youtube.com/embed/X48VuDVv0do', 'devops')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>DevOps & Cloud Architecture</h3>
-                <p>Master Docker containers, Kubernetes orchestration, CI/CD pipelines, AWS deployment, and infrastructure as code.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+                <p>Master Docker containers, Kubernetes orchestration, CI/CD pipelines, AWS deployment, and infrastructure code.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Study Notes, Video & Viva →</div>
             </div>
 
             <!-- Course 5 -->
             <div class="card" onclick="openCourseModal('Cybersecurity & Ethical Hacking', 'https://www.youtube.com/embed/3Kq1MIfTWCE', 'cybersecurity')">
                 <div class="card-badge">FULL COURSE</div>
                 <h3>Cybersecurity & Ethical Hacking</h3>
-                <p>Learn application security, penetration testing, threat modeling, network defense, and vulnerability assessment.</p>
-                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Watch Video & Take MCQ Viva →</div>
+                <p>Learn application security, penetration testing, threat modeling, network defense, and cryptography basics.</p>
+                <div style="margin-top: 1rem; color: var(--cyan-glow); font-weight: 600; font-size: 0.85rem;">▶ Study Notes, Video & Viva →</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume & Skill Analyzer Modal -->
+    <div class="modal-overlay" id="resumeModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal('resumeModal')">&times;</button>
+            <h3 style="color: var(--cyan-glow); margin-bottom: 0.5rem;">📄 Resume & Skill Gap Analyzer</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Paste your resume or list of skills below to analyze detected technical strengths and career readiness:</p>
+            
+            <textarea id="resumeInput" class="auth-input" style="height: 130px; resize: vertical;" placeholder="Paste your resume text here (e.g. Skilled in React, Node.js, Kubernetes, Cryptography, Python...)"></textarea>
+            <button class="btn btn-glow" style="width: 100%; margin: 1rem 0;" onclick="analyzeResumeSkills()">Analyze Skills Now</button>
+            
+            <div id="skillAnalysisReport" style="display: none; background: rgba(255,255,255,0.03); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-glow);">
+                <h4 style="color: var(--cyan-glow); font-size: 0.95rem; margin-bottom: 0.5rem;">Skill Analysis Report</h4>
+                <div id="detectedSkills" style="font-size: 0.88rem; line-height: 1.6; color: var(--text-main);"></div>
             </div>
         </div>
     </div>
@@ -195,7 +225,7 @@
         </div>
     </div>
 
-    <!-- Course, Video, & MCQ Viva Assessment Modal -->
+    <!-- Course, Video, Study Notes & MCQ Viva Modal -->
     <div class="modal-overlay" id="courseModal">
         <div class="modal">
             <button class="modal-close" onclick="closeModal('courseModal')">&times;</button>
@@ -203,6 +233,13 @@
             
             <div class="video-wrapper">
                 <iframe id="courseIframe" src="" allowfullscreen></iframe>
+            </div>
+
+            <!-- Study Notes Toggle Section -->
+            <button class="btn btn-outline" style="width: 100%; margin-bottom: 0.8rem;" onclick="toggleNotesUI()">📖 Toggle Quick Study Notes</button>
+            <div class="notes-container" id="notesBox">
+                <h5>📖 Quick Revision Notes</h5>
+                <pre id="notesText"></pre>
             </div>
 
             <!-- MCQ Viva Section -->
@@ -247,7 +284,7 @@
             <button onclick="toggleChat()" style="background: none; border: none; color: #fff; cursor: pointer;">&times;</button>
         </div>
         <div class="chat-body" id="chatBody">
-            <div class="chat-bubble bot">Hello! Ask me anything about course modules, MCQ viva assessments, or downloading your editable certificate!</div>
+            <div class="chat-bubble bot">Hello! Ask me anything about study notes, MCQ vivas, updating your resume, or downloading certificates!</div>
         </div>
         <div class="chat-footer">
             <input type="text" id="chatInput" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') sendMessage()">
@@ -256,7 +293,16 @@
     </div>
 
     <script>
-        // Expanded Multiple Choice Viva Question Bank
+        // Study Notes Library
+        const studyNotesData = {
+            fullstack: "• CSR vs SSR: CSR renders content in the browser; SSR pre-renders HTML on the server for faster initial loads and better SEO.\n• Event Delegation: Attaching a single event listener to a parent container to manage events on present or future child elements efficiently.\n• State vs Props: Props pass data down from parent to child components (read-only); State holds internal component data that changes over time.",
+            backend: "• Event Loop: Manages non-blocking asynchronous I/O using libuv thread pools in Node.js.\n• JWT (JSON Web Tokens): Self-contained tokens used for stateless authentication without maintaining session state on the server.\n• SQL vs NoSQL: SQL uses structured relational tables with strict ACID compliance; NoSQL uses flexible document key-value structures.",
+            ai: "• RAG (Retrieval-Augmented Generation): Enhances LLM prompt responses with context fetched from vector databases to prevent hallucinations.\n• Vector Embeddings: Numerical vector representations of text where semantic similarity is calculated using Cosine Distance or Euclidean metrics.",
+            devops: "• Docker Containerization: Packages software applications with all dependencies to guarantee uniform runtime environments across machines.\n• Kubernetes: Automates container deployment, horizontal autoscaling, self-healing, and load balancing across cluster nodes.",
+            cybersecurity: "• SQL Injection (SQLi): Vulnerability mitigated using parameterized database queries and prepared statements.\n• Web Application Firewall (WAF): Filters and blocks malicious HTTP requests like XSS attacks and SQLi before hitting the application server."
+        };
+
+        // Expanded MCQ Viva Question Bank
         const vivaData = {
             fullstack: [
                 {
@@ -310,11 +356,18 @@
             ]
         };
 
+        let currentTrackKey = 'fullstack';
+
         // Course Modal Functionality
         function openCourseModal(title, videoUrl, trackKey) {
+            currentTrackKey = trackKey;
             document.getElementById('courseTitle').innerText = title;
             document.getElementById('courseIframe').src = videoUrl;
             
+            // Set Study Notes Text
+            document.getElementById('notesText').innerText = studyNotesData[trackKey] || "Study notes available for this track.";
+            document.getElementById('notesBox').style.display = 'none';
+
             // Render MCQ Questions
             const questions = vivaData[trackKey] || vivaData.fullstack;
             const container = document.getElementById('vivaQuestionsContainer');
@@ -335,6 +388,11 @@
             document.getElementById('courseModal').classList.add('active');
         }
 
+        function toggleNotesUI() {
+            const box = document.getElementById('notesBox');
+            box.style.display = box.style.display === 'none' ? 'block' : 'none';
+        }
+
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
             if(id === 'courseModal') {
@@ -345,6 +403,31 @@
         function submitViva() {
             alert('✅ MCQ Viva Submission Evaluated! Your score has been recorded for your certificate.');
             closeModal('courseModal');
+        }
+
+        // Resume & Skill Analyzer Functions
+        function openResumeModal() {
+            document.getElementById('resumeModal').classList.add('active');
+        }
+
+        function analyzeResumeSkills() {
+            const text = document.getElementById('resumeInput').value;
+            if(!text.trim()) {
+                alert("Please paste your resume text first!");
+                return;
+            }
+            
+            const keywords = ['JavaScript', 'React', 'Node.js', 'Python', 'Docker', 'Kubernetes', 'Cryptography', 'SQL', 'MongoDB', 'AWS', 'RAG', 'REST API'];
+            const found = keywords.filter(skill => new RegExp(skill, 'i').test(text));
+            
+            const reportDiv = document.getElementById('skillAnalysisReport');
+            const detectedDiv = document.getElementById('detectedSkills');
+            
+            reportDiv.style.display = 'block';
+            detectedDiv.innerHTML = `
+                <p><strong>Identified Technical Skills (${found.length}):</strong> ${found.length ? found.join(', ') : 'No direct keyword matches found.'}</p>
+                <p style="margin-top: 0.6rem; color: var(--text-muted);"><strong>Recommended Focus:</strong> Complete the <em>${found.includes('Kubernetes') ? 'Cybersecurity & Ethical Hacking' : 'Cloud Architecture'}</em> MCQ Viva track to enhance your career profile!</p>
+            `;
         }
 
         // Authentication & Password Reset Flow
@@ -375,7 +458,6 @@
             const email = document.getElementById('resetEmail').value;
             if(!email) return;
             
-            // Generate mock 6-digit OTP
             generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
             document.getElementById('otpSentMsg').innerText = `OTP code sent to ${email}. (Demo Code: ${generatedOtp})`;
             alert(`📧 OTP sent to ${email}!\n\nFor testing, your OTP code is: ${generatedOtp}`);
@@ -384,7 +466,6 @@
 
         function resetPassword() {
             const userOtp = document.getElementById('otpInput').value;
-            const newPass = document.getElementById('newPassword').value;
 
             if(userOtp === generatedOtp) {
                 alert('🔑 Password successfully reset! You can now log in with your new password.');
