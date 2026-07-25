@@ -6,9 +6,10 @@
 <title>SkillBridge AI — Ultimate Major Project Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<!-- Client-side parsing libraries -->
+<!-- Client-side parsing & PDF libraries -->
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root {
     --bg: #030509;
@@ -122,6 +123,7 @@
   .form-group input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow); }
   .sec-meter { height: 5px; background: var(--border); border-radius: 3px; margin-top: 8px; overflow: hidden; }
   .sec-fill { height: 100%; width: 0%; background: var(--coral); transition: all 0.3s ease; }
+  .auth-link { color: var(--cyan); font-size: 11px; cursor: pointer; text-decoration: underline; display: inline-block; margin-top: 8px; }
 
   /* Hero & Roles */
   .hero { text-align: center; padding: 20px 0 36px; }
@@ -198,6 +200,7 @@
   .term-line { margin-bottom: 4px; }
   .term-line.info { color: var(--cyan); }
   .term-line.success { color: var(--mint); }
+  .term-line.error { color: var(--coral); }
 
   /* AI Assistant Drawer */
   .ai-drawer { position: fixed; bottom: 20px; right: 20px; width: 440px; height: 580px; z-index: 1000; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--purple); box-shadow: 0 0 30px rgba(157, 78, 221, 0.35); }
@@ -250,7 +253,7 @@
   <!-- Live Terminal Log Streamer -->
   <div class="term-drawer glass-card" id="term-logs">
     <div class="term-line info">[INIT] SkillBridge AI v10.0 Engine loaded with expanded track mappings.</div>
-    <div class="term-line">[SYS] Intelligent AI Bot & Verification Gate operational...</div>
+    <div class="term-line">[SYS] Intelligent AI Bot, OTP Password Recovery & Verification Gate operational...</div>
   </div>
 </div>
 
@@ -281,7 +284,8 @@
       </div>
     </div>
     <div style="margin-top:32px; display:flex; gap:12px; justify-content:center;" class="no-print">
-      <button class="btn btn-gold" onclick="window.print()">🖨 Print / Save PDF</button>
+      <button class="btn btn-gold" onclick="downloadCertPDF()">📥 Download Actual PDF</button>
+      <button class="btn btn-outline" onclick="window.print()">🖨 Print</button>
       <button class="btn btn-outline" onclick="closeCertModal()">Close</button>
     </div>
   </div>
@@ -297,7 +301,7 @@
     <button onclick="toggleAiBot()" style="background:none; border:none; color:var(--muted); cursor:pointer; font-size:16px;">✕</button>
   </div>
   <div class="ai-messages mono" id="ai-msg-container">
-    <div class="msg-ai">Greetings! I am your AI Technical Mentor. Ask me any question regarding code, concepts, or viva prep!</div>
+    <div class="msg-ai">Greetings! I am your Smart AI Technical Mentor. Ask me any technical question regarding code, concepts, system architecture, viva prep, or resume optimization!</div>
   </div>
   <div class="ai-input-area">
     <input type="text" id="ai-user-input" class="mono" placeholder="Ask AI a question..." onkeydown="if(event.key==='Enter') sendAiMessage()" />
@@ -403,20 +407,14 @@ const ROLES = [
   { id: 'backend', name: 'Backend Systems Engineer', tagline: 'Architect high-throughput microservices, database transactions, and secure REST APIs', skills: ['Node.js & Express', 'SQL & Databases', 'REST API Design', 'Auth & Security', 'Docker & Deployment', 'System Architecture'] },
   { id: 'ai', name: 'AI & Generative Engineering', tagline: 'Develop AI agents, fine-tune neural networks, and deploy enterprise RAG pipelines', skills: ['Python', 'Machine Learning', 'Deep Learning (PyTorch)', 'LLMs & RAG', 'AI Agent Frameworks', 'Vector Databases'] },
   { id: 'cloud', name: 'Cloud Infrastructure & DevOps', tagline: 'Master multi-cloud Kubernetes orchestration, Docker pipelines, and Terraform IaC', skills: ['Docker & Deployment', 'Kubernetes', 'AWS Infrastructure', 'Linux Admin', 'Terraform (IaC)', 'DevSecOps Pipelines'] },
-  { id: 'cyber', name: 'Cybersecurity & Ethical Hacking', tagline: 'Conduct penetration testing, neutralize vulnerabilities, and manage SOC security tools', skills: ['Network Security & Pen Testing', 'Cryptography & Identity', 'Auth & Security', 'Linux Admin', 'REST API Design'] },
-  { id: 'mobile', name: 'Mobile App Engineering (React Native & Flutter)', tagline: 'Engineer high-performance mobile apps across iOS & Android using native bridges and state machines', skills: ['JavaScript', 'React Native & Mobile UI', 'TypeScript', 'REST API Design', 'Cross-Platform State & APIs'] }
+  { id: 'cyber', name: 'Cybersecurity & Ethical Hacking', tagline: 'Conduct penetration testing, neutralize vulnerabilities, and manage SOC security tools', skills: ['Network Security & Pen Testing', 'Cryptography & Identity', 'Auth & Security', 'Linux Admin', 'REST API Design'] }
 ];
 
-// Unique Video IDs for EVERY Topic
+// Skill Details Dictionary
 const SKILL_DETAILS = {
   'HTML & CSS': {
-    ytChannel: 'Kevin Powell',
-    yt: 'pQN-pnXPaVg',
-    notes: {
-      concept: 'HTML provides semantic DOM nodes while CSS manages visual rendering using Flexbox and Grid layout engines.',
-      mechanics: 'The CSS Box Model calculates outer bounds: Total Width = width + padding + border. box-sizing: border-box prevents padding layout overflows.',
-      bestPractice: 'Enforce CSS variables (--primary-color) and semantic markup (<main>, <article>) for optimal SEO and accessibility.'
-    },
+    ytChannel: 'Kevin Powell', yt: 'pQN-pnXPaVg',
+    notes: { concept: 'HTML provides semantic DOM nodes while CSS manages visual rendering using Flexbox and Grid layout engines.', mechanics: 'The CSS Box Model calculates outer bounds: Total Width = width + padding + border. box-sizing: border-box prevents padding layout overflows.', bestPractice: 'Enforce CSS variables (--primary-color) and semantic markup (<main>, <article>) for optimal SEO and accessibility.' },
     diagram: `[HTML Markup] -> [CSSOM Calculation] -> [Box Model Render]`,
     snippet: `/* Reset to border-box model */\n*, *::before, *::after {\n  box-sizing: border-box;\n  margin: 0; padding: 0;\n}`,
     docs: [{ name: "MDN: CSS Box Model", url: "https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/The_box_model" }],
@@ -426,29 +424,19 @@ const SKILL_DETAILS = {
     ]
   },
   'JavaScript': {
-    ytChannel: 'Web Dev Simplified',
-    yt: 'W6NZfCO5SIk',
-    notes: {
-      concept: 'JavaScript is a single-threaded, non-blocking asynchronous language running on V8 with an event loop architecture.',
-      mechanics: 'Event Delegation leverages Event Bubbling to manage events on multiple child nodes via a single parent listener.',
-      bestPractice: 'Use Promise.all() for concurrent network requests and avoid var in favor of const and let.'
-    },
+    ytChannel: 'Web Dev Simplified', yt: 'W6NZfCO5SIk',
+    notes: { concept: 'JavaScript is a single-threaded, non-blocking asynchronous language running on V8 with an event loop architecture.', mechanics: 'Event Delegation leverages Event Bubbling to manage events on multiple child nodes via a single parent listener.', bestPractice: 'Use Promise.all() for concurrent network requests and avoid var in favor of const and let.' },
     diagram: `[Call Stack] -> [Web APIs] -> [Microtasks (Promises)] -> [Macrotasks]`,
     snippet: `async function fetchBatch(urls) {\n  const reqs = urls.map(url => fetch(url));\n  return Promise.all(reqs);\n}`,
     docs: [{ name: "MDN: JS Event Loop", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop" }],
     vivas: [
       { q: 'Q1: What executes first after the Call Stack empties?', options: ['Macrotasks (setTimeout)', 'Microtasks (Promises)', 'DOM Paint', 'Idle Callback'], ans: 1, exp: 'Microtasks are completely drained before any macrotask runs.' },
-      { q: 'Q2: What is the primary benefit of Event Delegation?', options: ['Attaches one listener to a parent', 'Disables browser repaints', 'Speeds up JSON serialization', 'Aborts fetch calls'], ans: 0, exp: 'Event delegation allows handling events for dynamic child nodes cleanly at the parent level.' }
+      { q: 'Q2: What is the primary benefit of Event Delegation?', options: ['Attaches one listener to a parent', 'Disables browser repaints', 'Speeds up JSON serialization', 'Aborts fetch calls'], ans: 0, exp: 'Event delegation handles events for dynamic child nodes cleanly at the parent level.' }
     ]
   },
   'React': {
-    ytChannel: 'Bro Code',
-    yt: 'CgkZ7MvWUAA',
-    notes: {
-      concept: 'React builds declarative UIs via Virtual DOM diffing to calculate minimal patch updates for the real browser DOM.',
-      mechanics: 'The useEffect hook manages side effects. Passing [] guarantees execution runs only once on component mount.',
-      bestPractice: 'Wrap expensive derived values in useMemo and child callbacks in useCallback to avoid re-renders.'
-    },
+    ytChannel: 'Bro Code', yt: 'CgkZ7MvWUAA',
+    notes: { concept: 'React builds declarative UIs via Virtual DOM diffing to calculate minimal patch updates for the real browser DOM.', mechanics: 'The useEffect hook manages side effects. Passing [] guarantees execution runs only once on component mount.', bestPractice: 'Wrap expensive derived values in useMemo and child callbacks in useCallback to avoid re-renders.' },
     diagram: `[State Change] -> [Virtual DOM Diff] -> [Minimal Browser Patch]`,
     snippet: `import React, { useState, useEffect } from 'react';\n\nexport function Component() {\n  const [count, setCount] = useState(0);\n  useEffect(() => { console.log('Mounted'); }, []);\n  return <button onClick={() => setCount(c => c + 1)}>{count}</button>;\n}`,
     docs: [{ name: "React Docs: Hooks", url: "https://react.dev/reference/react/hooks" }],
@@ -458,13 +446,8 @@ const SKILL_DETAILS = {
     ]
   },
   'TypeScript': {
-    ytChannel: 'Fireship',
-    yt: 'zQnBQ4tjiEY',
-    notes: {
-      concept: 'TypeScript adds optional static typing to JS to catch structural errors during compile-time.',
-      mechanics: 'The unknown type forces type narrowing (typeof, instanceof) before property access, unlike any.',
-      bestPractice: 'Enable strict: true in tsconfig.json and define explicit interfaces for API contracts.'
-    },
+    ytChannel: 'Fireship', yt: 'zQnBQ4tjiEY',
+    notes: { concept: 'TypeScript adds optional static typing to JS to catch structural errors during compile-time.', mechanics: 'The unknown type forces type narrowing (typeof, instanceof) before property access, unlike any.', bestPractice: 'Enable strict: true in tsconfig.json and define explicit interfaces for API contracts.' },
     diagram: `[TS File] -> [tsc Type Checker] -> [Clean JS Output]`,
     snippet: `function parse(val: unknown): string {\n  if (typeof val === 'string') return val.trim().toUpperCase();\n  throw new Error("Invalid string");\n}`,
     docs: [{ name: "TypeScript Handbook", url: "https://www.typescriptlang.org/docs/" }],
@@ -473,13 +456,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Node.js & Express': {
-    ytChannel: 'Dave Gray',
-    yt: 'fBNz5xF-Kx4',
-    notes: {
-      concept: 'Node.js is an async event-driven runtime using Google V8 and libuv for backend microservices.',
-      mechanics: 'Express middleware functions form an execution pipeline taking (req, res, next) arguments.',
-      bestPractice: 'Use centralized error-handling middleware and avoid blocking the single-threaded event loop.'
-    },
+    ytChannel: 'Dave Gray', yt: 'fBNz5xF-Kx4',
+    notes: { concept: 'Node.js is an async event-driven runtime using Google V8 and libuv for backend microservices.', mechanics: 'Express middleware functions form an execution pipeline taking (req, res, next) arguments.', bestPractice: 'Use centralized error-handling middleware and avoid blocking the single-threaded event loop.' },
     diagram: `[Request] -> [Middleware 1] -> [Middleware 2] -> [Route Handler] -> [Response]`,
     snippet: `const express = require('express');\nconst app = express();\napp.use(express.json());\napp.get('/health', (req, res) => res.json({ status: 'ok' }));`,
     docs: [{ name: "Node.js Guide", url: "https://nodejs.org/en/docs/" }],
@@ -488,13 +466,8 @@ const SKILL_DETAILS = {
     ]
   },
   'SQL & Databases': {
-    ytChannel: 'freeCodeCamp',
-    yt: 'HXV3zeQKqGY',
-    notes: {
-      concept: 'Relational databases store normalized data enforcing strict ACID transaction guarantees.',
-      mechanics: 'B-Tree indexing speeds up SELECT queries from O(N) full scans to O(log N) logarithmic lookups.',
-      bestPractice: 'Always use parameterized SQL queries to neutralize SQL Injection vulnerabilities.'
-    },
+    ytChannel: 'freeCodeCamp', yt: 'HXV3zeQKqGY',
+    notes: { concept: 'Relational databases store normalized data enforcing strict ACID transaction guarantees.', mechanics: 'B-Tree indexing speeds up SELECT queries from O(N) full scans to O(log N) logarithmic lookups.', bestPractice: 'Always use parameterized SQL queries to neutralize SQL Injection vulnerabilities.' },
     diagram: `[SQL Query] -> [Query Planner] -> [B-Tree Index Lookup] -> [Data Rows]`,
     snippet: `-- Parameterized Query Pattern\nSELECT id, name FROM users WHERE status = 'active' AND role = $1;`,
     docs: [{ name: "PostgreSQL Docs", url: "https://www.postgresql.org/docs/" }],
@@ -503,13 +476,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Python': {
-    ytChannel: 'Programming with Mosh',
-    yt: 'kqtD7dUpMdo',
-    notes: {
-      concept: 'Python is a high-level interpreted language renowned for clean syntax, dynamic typing, and massive AI ecosystems.',
-      mechanics: 'Memory management is handled via reference counting and automatic generational garbage collection.',
-      bestPractice: 'Use virtual environments (venv) and type hinting to build maintainable applications.'
-    },
+    ytChannel: 'Programming with Mosh', yt: 'kqtD7dUpMdo',
+    notes: { concept: 'Python is a high-level interpreted language renowned for clean syntax, dynamic typing, and massive AI ecosystems.', mechanics: 'Memory management is handled via reference counting and automatic generational garbage collection.', bestPractice: 'Use virtual environments (venv) and type hinting to build maintainable applications.' },
     diagram: `[Python Code (.py)] -> [Bytecode (.pyc)] -> [PVM Interpreter]`,
     snippet: `def process_records(items: list[str]) -> dict[str, int]:\n    return {item: len(item) for item in items if item}`,
     docs: [{ name: "Python Official Docs", url: "https://docs.python.org/3/" }],
@@ -518,13 +486,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Machine Learning': {
-    ytChannel: 'freeCodeCamp / StatQuest',
-    yt: 'i_LwzRVP7bg',
-    notes: {
-      concept: 'Machine learning constructs statistical models from training data to generalize predictions without static rules.',
-      mechanics: 'Supervised learning maps feature vectors (X) to targets (y) by minimizing loss functions via gradient descent.',
-      bestPractice: 'Always split datasets into training, validation, and test subsets to detect overfitting.'
-    },
+    ytChannel: 'freeCodeCamp / StatQuest', yt: 'i_LwzRVP7bg',
+    notes: { concept: 'Machine learning constructs statistical models from training data to generalize predictions without static rules.', mechanics: 'Supervised learning maps feature vectors (X) to targets (y) by minimizing loss functions via gradient descent.', bestPractice: 'Always split datasets into training, validation, and test subsets to detect overfitting.' },
     diagram: `[Raw Data] -> [Feature Engineering] -> [Model Training] -> [Evaluation]`,
     snippet: `from sklearn.ensemble import RandomForestClassifier\nclf = RandomForestClassifier(n_estimators=100)\nclf.fit(X_train, y_train)`,
     docs: [{ name: "Scikit-Learn Docs", url: "https://scikit-learn.org/" }],
@@ -533,13 +496,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Deep Learning (PyTorch)': {
-    ytChannel: 'Aladdin Persson',
-    yt: 'V_xro1bcAuA',
-    notes: {
-      concept: 'PyTorch provides dynamic tensor computation graphs with hardware GPU acceleration for neural networks.',
-      mechanics: 'Autograd computes partial derivatives during backward propagation using loss.backward().',
-      bestPractice: 'Always call optimizer.zero_grad() before computing gradients on new batches.'
-    },
+    ytChannel: 'Aladdin Persson', yt: 'V_xro1bcAuA',
+    notes: { concept: 'PyTorch provides dynamic tensor computation graphs with hardware GPU acceleration for neural networks.', mechanics: 'Autograd computes partial derivatives during backward propagation using loss.backward().', bestPractice: 'Always call optimizer.zero_grad() before computing gradients on new batches.' },
     diagram: `[Input Tensor] -> [Forward Pass] -> [Loss Compute] -> [Backward Autograd]`,
     snippet: `import torch\nimport torch.nn as nn\nmodel = nn.Linear(128, 10)\noutput = model(torch.randn(32, 128))`,
     docs: [{ name: "PyTorch Documentation", url: "https://pytorch.org/docs/" }],
@@ -548,13 +506,8 @@ const SKILL_DETAILS = {
     ]
   },
   'LLMs & RAG': {
-    ytChannel: 'Andrej Karpathy',
-    yt: 'T-D1OfcDW1M',
-    notes: {
-      concept: 'Retrieval-Augmented Generation (RAG) grounds Large Language Models on external vector context to eliminate hallucinations.',
-      mechanics: 'Text embeddings convert documents into dense vector spaces for cosine similarity search.',
-      bestPractice: 'Use chunking strategies with chunk overlap to preserve semantic context across boundaries.'
-    },
+    ytChannel: 'Andrej Karpathy', yt: 'T-D1OfcDW1M',
+    notes: { concept: 'Retrieval-Augmented Generation (RAG) grounds Large Language Models on external vector context to eliminate hallucinations.', mechanics: 'Text embeddings convert documents into dense vector spaces for cosine similarity search.', bestPractice: 'Use chunking strategies with chunk overlap to preserve semantic context across boundaries.' },
     diagram: `[User Prompt] -> [Vector Embedding Search] -> [Context Injection] -> [LLM Synthesis]`,
     snippet: `# RAG Architecture Pipeline:\n# 1. Chunk & Embed Document\n# 2. Vector DB Cosine Similarity Search\n# 3. Augment Prompt Context`,
     docs: [{ name: "LangChain Documentation", url: "https://python.langchain.com/" }],
@@ -563,13 +516,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Docker & Deployment': {
-    ytChannel: 'TechWorld with Nana',
-    yt: 'pTFZFxd4hOI',
-    notes: {
-      concept: 'Docker packages applications and dependencies into immutable OS-level containers for reliable deployment.',
-      mechanics: 'Containers isolate filesystems and networks while sharing the host Linux kernel via cgroups and namespaces.',
-      bestPractice: 'Use multi-stage Dockerfiles to minimize final production container image size.'
-    },
+    ytChannel: 'TechWorld with Nana', yt: 'pTFZFxd4hOI',
+    notes: { concept: 'Docker packages applications and dependencies into immutable OS-level containers for reliable deployment.', mechanics: 'Containers isolate filesystems and networks while sharing the host Linux kernel via cgroups and namespaces.', bestPractice: 'Use multi-stage Dockerfiles to minimize final production container image size.' },
     diagram: `[Dockerfile] -> [Docker Image] -> [Isolated Container]`,
     snippet: `FROM node:20-alpine AS build\nWORKDIR /app\nCOPY package*.json ./\nRUN npm ci\nCOPY . .\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCMD ["node", "dist/index.js"]`,
     docs: [{ name: "Docker Guide", url: "https://docs.docker.com/" }],
@@ -578,13 +526,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Network Security & Pen Testing': {
-    ytChannel: 'NetworkChuck',
-    yt: '3Kq1MIfTWCE',
-    notes: {
-      concept: 'Penetration testing systematically checks networks, ports, and services for vulnerabilities before exploit.',
-      mechanics: 'Port scanners like Nmap send TCP SYN packets to discover open sockets and daemon versions.',
-      bestPractice: 'Scope engagements strictly within defined Rules of Engagement (RoE) and always obtain authorization.'
-    },
+    ytChannel: 'NetworkChuck', yt: '3Kq1MIfTWCE',
+    notes: { concept: 'Penetration testing systematically checks networks, ports, and services for vulnerabilities before exploit.', mechanics: 'Port scanners like Nmap send TCP SYN packets to discover open sockets and daemon versions.', bestPractice: 'Scope engagements strictly within defined Rules of Engagement (RoE) and always obtain authorization.' },
     diagram: `[Attacker Machine] -> [Port Scan / Nmap] -> [Service Discovery] -> [Vulnerability Identification]`,
     snippet: `# Nmap SYN Stealth Scan Syntax:\nnmap -sS -sV -p 1-65535 192.168.1.1`,
     docs: [{ name: "OWASP Foundation", url: "https://owasp.org/" }],
@@ -593,13 +536,8 @@ const SKILL_DETAILS = {
     ]
   },
   'Cryptography & Identity': {
-    ytChannel: 'Computerphile',
-    yt: 'GSIDS_lvRv4',
-    notes: {
-      concept: 'Modern web identity relies on asymmetric key exchange (RSA/ECC) and OAuth2/OIDC token protocols.',
-      mechanics: 'Public Key Infrastructure (PKI) encrypts data using a public key and decrypts it via the recipient private key.',
-      bestPractice: 'Store credentials using salted key derivation functions such as bcrypt or Argon2id.'
-    },
+    ytChannel: 'Computerphile', yt: 'GSIDS_lvRv4',
+    notes: { concept: 'Modern web identity relies on asymmetric key exchange (RSA/ECC) and OAuth2/OIDC token protocols.', mechanics: 'Public Key Infrastructure (PKI) encrypts data using a public key and decrypts it via the recipient private key.', bestPractice: 'Store credentials using salted key derivation functions such as bcrypt or Argon2id.' },
     diagram: `[Client Request] -> [Auth Server (OIDC)] -> [JWT Signed Access Token] -> [Resource API]`,
     snippet: `// Verifying JWT Signature Client or Server side\nconst jwt = require('jsonwebtoken');\nconst decoded = jwt.verify(token, process.env.JWT_SECRET);`,
     docs: [{ name: "Auth0 OIDC Guide", url: "https://auth0.com/docs/get-started/authentication-and-authorization-flow" }],
@@ -607,34 +545,104 @@ const SKILL_DETAILS = {
       { q: 'Q1: Which algorithm is specifically designed for secure password hashing with salt?', options: ['MD5', 'SHA-256', 'Argon2id', 'AES-128'], ans: 2, exp: 'Argon2id is a memory-hard password hashing algorithm designed to resist GPU/ASIC attacks.' }
     ]
   },
-  'React Native & Mobile UI': {
-    ytChannel: 'Academind',
-    yt: 'gvkqT_UoM54',
-    notes: {
-      concept: 'React Native compiles JavaScript React components into native iOS (Swift/Obj-C) and Android (Java/Kotlin) UI components.',
-      mechanics: 'Flexbox layout defaults to flex-direction: column on mobile screens rather than web row layout defaults.',
-      bestPractice: 'Use FlatList instead of ScrollList when rendering long datasets to enable viewport virtualization.'
-    },
-    diagram: `[JS Thread (React Components)] <-> [Native Bridge / JSI] <-> [Native iOS/Android UI Engine]`,
-    snippet: `import React from 'react';\nimport { View, Text, StyleSheet } from 'react-native';\n\nexport default function App() {\n  return (\n    <View style={styles.container}>\n      <Text style={styles.text}>Native Bridge Online</Text>\n    </View>\n  );\n}`,
-    docs: [{ name: "React Native Official Docs", url: "https://reactnative.dev/docs/getting-started" }],
+  'REST API Design': {
+    ytChannel: 'Traversy Media', yt: 'lsMQRaeOldA',
+    notes: { concept: 'REST APIs leverage standard HTTP methods (GET, POST, PUT, DELETE) and status codes to manipulate stateless resource representations.', mechanics: 'Statelessness requires that each HTTP request contain all authentication metadata (e.g., Bearer JWT tokens).', bestPractice: 'Use proper HTTP status codes (200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found).' },
+    diagram: `[Client] -> [HTTP GET /api/v1/users] -> [Controller/DB] -> [200 JSON Response]`,
+    snippet: `app.get('/api/v1/resource/:id', async (req, res) => {\n  const item = await db.find(req.params.id);\n  if(!item) return res.status(404).json({ error: 'Not found' });\n  res.json(item);\n});`,
+    docs: [{ name: "RESTful API Design", url: "https://restfulapi.net/" }],
     vivas: [
-      { q: 'Q1: Why is FlatList preferred over ScrollView for long dynamic lists?', options: ['FlatList encrypts component state', 'FlatList virtualizes list items off-screen to conserve RAM', 'ScrollView requires backend APIs', 'ScrollView works on iOS only'], ans: 1, exp: 'FlatList renders only visible elements in the current viewport, preventing memory bloat.' }
+      { q: 'Q1: Which HTTP method should be used for idempotent updates to a complete resource?', options: ['POST', 'PUT', 'PATCH', 'OPTION'], ans: 1, exp: 'PUT replaces target resource representations idempotently.' }
     ]
   },
-  'Cross-Platform State & APIs': {
-    ytChannel: 'Joma Tech',
-    yt: '0-S5a0eXPoc',
-    notes: {
-      concept: 'Mobile applications require robust offline sync states, secure local storage, and cached API networks.',
-      mechanics: 'Redux Toolkit / React Query handles cached asynchronous requests and optimistic UI state updates.',
-      bestPractice: 'Store auth session keys in Secure Store / Keychain rather than plain Unencrypted LocalStorage.'
-    },
-    diagram: `[Mobile UI] -> [React Query / Redux Cache] -> [Async Encrypted Storage] <-> [GraphQL / REST API]`,
-    snippet: `import EncryptedStorage from 'react-native-encrypted-storage';\n\nasync function storeUserSession(token) {\n  await EncryptedStorage.setItem("user_session", token);\n}`,
-    docs: [{ name: "React Query Native", url: "https://tanstack.com/query/latest" }],
+  'Auth & Security': {
+    ytChannel: 'Fireship', yt: 'UBUNs24mvEg',
+    notes: { concept: 'Authentication verifies identity while Authorization enforces access control permissions across app resources.', mechanics: 'OAuth2 framework uses access tokens and refresh tokens to grant limited third-party access.', bestPractice: 'Enforce HTTPS everywhere, set HttpOnly and SameSite flags on auth cookies.' },
+    diagram: `[User Credentials] -> [Auth Provider] -> [Signed Access Token] -> [Protected Resource]`,
+    snippet: `// Express JWT Security Middleware\nconst auth = (req, res, next) => {\n  const token = req.headers['authorization']?.split(' ')[1];\n  if(!token) return res.sendStatus(401);\n  req.user = verifyToken(token);\n  next();\n};`,
+    docs: [{ name: "OWASP Top 10", url: "https://owasp.org/www-project-top-ten/" }],
     vivas: [
-      { q: 'Q1: Where should JWT access tokens be saved on mobile platforms for security?', options: ['Plain text files', 'iOS Keychain / Android Encrypted Shared Preferences', 'Browser LocalStorage', 'Global JavaScript variables'], ans: 1, exp: 'Mobile OS keychains wrap token storage in hardware-backed encryption.' }
+      { q: 'Q1: What flag prevents JavaScript from accessing authentication cookies?', options: ['Secure', 'HttpOnly', 'SameSite=Strict', 'Domain'], ans: 1, exp: 'HttpOnly prevents client-side scripts from reading cookies, mitigating XSS risks.' }
+    ]
+  },
+  'System Architecture': {
+    ytChannel: 'ByteByteGo', yt: 'm8Icp_Cid5o',
+    notes: { concept: 'System Architecture designs scalable distributed topologies balancing load, latency, fault tolerance, and consistency.', mechanics: 'Load balancers distribute traffic across instances using algorithms like Round Robin or Least Connections.', bestPractice: 'Design stateless service layers and implement caching (Redis) for database read hotspots.' },
+    diagram: `[Client] -> [Load Balancer] -> [Service Instances] -> [Redis Cache] -> [Database]`,
+    snippet: `// Distributed Caching Pattern\nasync function getCachedData(key) {\n  let val = await redis.get(key);\n  if(!val) { val = await db.query(); await redis.set(key, val, 'EX', 3600); }\n  return val;\n}`,
+    docs: [{ name: "System Design Primer", url: "https://github.com/donnemartin/system-design-primer" }],
+    vivas: [
+      { q: 'Q1: What principle states a distributed system can only provide 2 of 3 guarantees: Consistency, Availability, Partition Tolerance?', options: ['ACID Theorem', 'CAP Theorem', 'BASE Theorem', 'SOLID Principles'], ans: 1, exp: 'The CAP theorem governs distributed database design constraints.' }
+    ]
+  },
+  'AI Agent Frameworks': {
+    ytChannel: 'LangChain / AutoGen', yt: 'Y7A4G008M2s',
+    notes: { concept: 'AI Agent frameworks orchestrate autonomous LLM reasoning loops with dynamic tool invocation.', mechanics: 'The ReAct (Reasoning + Acting) loop uses thoughts, actions, and observations to achieve goals.', bestPractice: 'Constrain tool actions with strict execution sandboxes and timeout limits.' },
+    diagram: `[Goal] -> [Thought] -> [Tool Call] -> [Observation] -> [Final Output]`,
+    snippet: `// Agent ReAct Execution Loop\nwhile(!goalAchieved) {\n  const thought = await llm.reason(context);\n  const result = await executeTool(thought.action);\n  context.update(result);\n}`,
+    docs: [{ name: "LangChain Agents", url: "https://python.langchain.com/docs/modules/agents/" }],
+    vivas: [
+      { q: 'Q1: What is the core execution pattern used by autonomous LLM agents to solve complex tasks?', options: ['MapReduce', 'ReAct (Reasoning + Acting)', 'Linear Regression', 'Backpropagation'], ans: 1, exp: 'ReAct loops alternate between reasoning thoughts and tool execution actions.' }
+    ]
+  },
+  'Vector Databases': {
+    ytChannel: 'Pinecone / Weaviate', yt: 'klTvEwg3oJ4',
+    notes: { concept: 'Vector databases store high-dimensional embeddings optimized for fast nearest-neighbor similarity searches.', mechanics: 'HNSW (Hierarchical Navigable Small World) graphs index vector spaces for sub-linear retrieval speed.', bestPractice: 'Include rich metadata payloads along with vectors to perform hybrid metadata filtering.' },
+    diagram: `[Vector Query] -> [HNSW Graph Traversal] -> [Nearest K-Neighbors]`,
+    snippet: `const results = await vectorDb.query({\n  vector: queryEmbedding,\n  topK: 5,\n  filter: { category: 'engineering' }\n});`,
+    docs: [{ name: "Pinecone Docs", url: "https://docs.pinecone.io/" }],
+    vivas: [
+      { q: 'Q1: Which indexing structure is widely used by vector databases for fast similarity lookups?', options: ['B-Tree', 'HNSW Graph', 'Red-Black Tree', 'Linked List'], ans: 1, exp: 'HNSW graphs organize multi-dimensional vectors for fast approximate nearest-neighbor search.' }
+    ]
+  },
+  'Kubernetes': {
+    ytChannel: 'TechWorld with Nana', yt: 'X48VuDVv0do',
+    notes: { concept: 'Kubernetes (K8s) orchestrates containerized workloads across node clusters automatically.', mechanics: 'Control Plane (API Server, ETCD, Scheduler) manages worker nodes running Kubelet and Pods.', bestPractice: 'Define Declarative YAML manifests and set explicit CPU/Memory Resource limits.' },
+    diagram: `[kubectl] -> [API Server] -> [Scheduler] -> [Worker Node / Pod]`,
+    snippet: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web-app\nspec:\n  replicas: 3`,
+    docs: [{ name: "Kubernetes Docs", url: "https://kubernetes.io/docs/" }],
+    vivas: [
+      { q: 'Q1: What is the smallest deployable computing unit in Kubernetes?', options: ['Container', 'Pod', 'Node', 'Cluster'], ans: 1, exp: 'A Pod wraps one or more containers running in a shared network/storage context.' }
+    ]
+  },
+  'AWS Infrastructure': {
+    ytChannel: 'Be A Better Dev', yt: 'Ia-UEYYR44s',
+    notes: { concept: 'AWS provides cloud infrastructure services spanning compute (EC2), storage (S3), and networking (VPC).', mechanics: 'IAM (Identity & Access Management) enforces least-privilege security policies across all AWS API calls.', bestPractice: 'Deploy compute nodes across multiple Availability Zones (AZs) behind an Application Load Balancer.' },
+    diagram: `[Route53 DNS] -> [ALB] -> [EC2 Multi-AZ Auto Scaling] -> [RDS Database]`,
+    snippet: `# AWS CLI S3 Sync Command\naws s3 sync ./dist s3://my-production-bucket --acl public-read`,
+    docs: [{ name: "AWS Documentation", url: "https://docs.aws.amazon.com/" }],
+    vivas: [
+      { q: 'Q1: Which AWS service manages access permissions using JSON policy documents?', options: ['IAM', 'S3', 'EC2', 'CloudWatch'], ans: 0, exp: 'IAM defines role and user permissions using declarative JSON policies.' }
+    ]
+  },
+  'Linux Admin': {
+    ytChannel: 'Learn Linux TV', yt: 'wBp0Rb-ZJak',
+    notes: { concept: 'Linux OS powers cloud servers, container runtimes, and system automation environments.', mechanics: 'Systemd manages background daemon services, processes, and boot targets.', bestPractice: 'Disable root SSH password login and use SSH public key authentication.' },
+    diagram: `[User Shell] -> [System Call] -> [Linux Kernel] -> [Hardware / Devices]`,
+    snippet: `# Manage Systemd Daemon Service\nsudo systemctl restart nginx\nsudo journalctl -u nginx -f`,
+    docs: [{ name: "Linux Documentation", url: "https://www.kernel.org/doc/html/latest/" }],
+    vivas: [
+      { q: 'Q1: Which command inspects active system service logs managed by systemd?', options: ['journalctl', 'top', 'netstat', 'chmod'], ans: 0, exp: 'journalctl queries logs produced by systemd services.' }
+    ]
+  },
+  'Terraform (IaC)': {
+    ytChannel: 'HashiCorp', yt: 'h970ZBgKINg',
+    notes: { concept: 'Terraform provisions multi-cloud infrastructure declaratively using HashiCorp Configuration Language (HCL).', mechanics: 'Terraform tracks real-world infrastructure mappings inside a state file (terraform.tfstate).', bestPractice: 'Store state files in remote encrypted buckets (S3) with state locking enabled via DynamoDB.' },
+    diagram: `[HCL Code] -> [terraform plan] -> [terraform apply] -> [Cloud APIs]`,
+    snippet: `resource "aws_s3_bucket" "prod" {\n  bucket = "app-storage-bucket"\n}`,
+    docs: [{ name: "Terraform Docs", url: "https://developer.hashicorp.com/terraform/docs" }],
+    vivas: [
+      { q: 'Q1: Which Terraform command previews resource additions and changes before applying?', options: ['terraform plan', 'terraform init', 'terraform apply', 'terraform destroy'], ans: 0, exp: 'terraform plan displays expected infrastructure changes.' }
+    ]
+  },
+  'DevSecOps Pipelines': {
+    ytChannel: 'GitLab / GitHub', yt: 'R8_veQiYzgU',
+    notes: { concept: 'DevSecOps integrates security scanning (SAST/DAST/Dependency Checks) directly into automated CI/CD workflows.', mechanics: 'Pipeline runners build code, execute unit tests, scan vulnerabilities, and deploy artifact images.', bestPractice: 'Store secrets in dedicated vaults (HashiCorp Vault / GitHub Secrets) rather than hardcoded scripts.' },
+    diagram: `[git push] -> [CI Runner] -> [SAST Scan] -> [Docker Build] -> [Prod Deploy]`,
+    snippet: `# GitHub Actions Security Job\njobs:\n  security:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v3\n      - name: Run Vulnerability Scanner\n        run: npx audit-ci --high`,
+    docs: [{ name: "GitHub Actions Docs", url: "https://docs.github.com/en/actions" }],
+    vivas: [
+      { q: 'Q1: What does SAST stand for in automated DevSecOps pipelines?', options: ['Static Application Security Testing', 'Secure API Storage Technique', 'Server Access System Verification', 'System Automated Software Transfer'], ans: 0, exp: 'SAST analyzes source code for vulnerabilities prior to compilation.' }
     ]
   }
 };
@@ -643,6 +651,9 @@ const SKILL_DETAILS = {
 let state = JSON.parse(localStorage.getItem('sb_app_state_v10')) || {
   user: null,
   step: 'auth',
+  authMode: 'login', // 'login', 'forgot', 'otp'
+  resetEmail: '',
+  generatedOtp: null,
   roleId: null,
   matched: [],
   completed: [],
@@ -679,7 +690,7 @@ function renderHeader() {
       </div>
     `;
   } else {
-    userNav.innerHTML = `<button class="btn btn-cyan" style="padding:8px 16px; font-size:12px;" onclick="state.step='auth'; render();">Sign In</button>`;
+    userNav.innerHTML = `<button class="btn btn-cyan" style="padding:8px 16px; font-size:12px;" onclick="state.step='auth'; state.authMode='login'; render();">Sign In</button>`;
   }
 }
 
@@ -687,36 +698,95 @@ function logout() {
   addTermLog('User signed out.', 'info');
   state.user = null;
   state.step = 'auth';
+  state.authMode = 'login';
   saveState();
   render();
 }
 
-/* ---------------- AUTHENTICATION PORTAL ---------------- */
+/* ---------------- AUTHENTICATION & GMAIL OTP RECOVERY ---------------- */
 function renderAuth() {
-  return `
-    <div class="auth-container glass-card">
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tab-login">JWT Authenticator</button>
+  const mode = state.authMode || 'login';
+
+  if (mode === 'login') {
+    return `
+      <div class="auth-container glass-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active">Sign In / Register</button>
+        </div>
+        <form onsubmit="handleAuth(event)">
+          <div class="form-group">
+            <label class="mono">DEVELOPER EMAIL IDENTITY</label>
+            <input type="email" id="auth-email" placeholder="dev@company.io" required />
+          </div>
+          <div class="form-group">
+            <label class="mono">ACCESS PASSPHRASE</label>
+            <input type="password" id="auth-password" placeholder="••••••••••••" oninput="updateSecMeter(this.value)" required />
+            <div class="sec-meter"><div class="sec-fill" id="sec-fill"></div></div>
+          </div>
+          <a class="auth-link mono" onclick="switchAuthMode('forgot')">Forgot Password? Restore via Gmail OTP →</a>
+          <button type="submit" class="btn btn-cyan" style="width:100%; justify-content:center; padding:14px; margin-top:16px;">
+            Authorize Identity & Sign In →
+          </button>
+        </form>
       </div>
-      <form onsubmit="handleAuth(event)">
-        <div class="form-group">
-          <label class="mono">DEVELOPER EMAIL IDENTITY</label>
-          <input type="email" id="auth-email" placeholder="dev@company.io" required />
+    `;
+  } else if (mode === 'forgot') {
+    return `
+      <div class="auth-container glass-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active">Reset Password (Step 1)</button>
         </div>
-        <div class="form-group">
-          <label class="mono">ACCESS PASSPHRASE</label>
-          <input type="password" id="auth-password" placeholder="••••••••••••" oninput="updateSecMeter(this.value)" required />
-          <div class="sec-meter"><div class="sec-fill" id="sec-fill"></div></div>
+        <form onsubmit="handleSendOtp(event)">
+          <div class="form-group">
+            <label class="mono">REGISTERED GMAIL ADDRESS</label>
+            <input type="email" id="reset-email" placeholder="your.name@gmail.com" required />
+          </div>
+          <div class="mono" style="font-size:11px; color:var(--muted); margin-bottom:16px;">
+            * A 6-digit OTP verification token will be dispatched to your Gmail account.
+          </div>
+          <button type="submit" class="btn btn-gold" style="width:100%; justify-content:center; padding:14px;">
+            📧 Send OTP Verification Code
+          </button>
+          <div style="text-align:center; margin-top:12px;">
+            <a class="auth-link mono" onclick="switchAuthMode('login')">← Back to Sign In</a>
+          </div>
+        </form>
+      </div>
+    `;
+  } else if (mode === 'otp') {
+    return `
+      <div class="auth-container glass-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active">Verify OTP & New Password</button>
         </div>
-        <div class="mono" style="font-size:11px; color:var(--muted); margin-bottom:18px;">
-          * Generates client-side OAuth2 bearer tokens and initializes session encryption
-        </div>
-        <button type="submit" class="btn btn-cyan" style="width:100%; justify-content:center; padding:14px;">
-          Authorize Identity & Sign In →
-        </button>
-      </form>
-    </div>
-  `;
+        <form onsubmit="handleResetPassword(event)">
+          <div class="mono" style="font-size:11px; color:var(--mint); margin-bottom:14px;" id="otp-status-msg">
+            OTP code dispatched to ${state.resetEmail}.
+          </div>
+          <div class="form-group">
+            <label class="mono">ENTER 6-DIGIT OTP CODE</label>
+            <input type="text" id="otp-input" placeholder="123456" maxlength="6" required />
+          </div>
+          <div class="form-group">
+            <label class="mono">NEW PASSPHRASE</label>
+            <input type="password" id="new-password" placeholder="Enter new password" required />
+          </div>
+          <button type="submit" class="btn btn-mint" style="width:100%; justify-content:center; padding:14px;">
+            🔑 Reset & Update Password
+          </button>
+          <div style="text-align:center; margin-top:12px;">
+            <a class="auth-link mono" onclick="switchAuthMode('forgot')">← Resend OTP Code</a>
+          </div>
+        </form>
+      </div>
+    `;
+  }
+}
+
+function switchAuthMode(mode) {
+  state.authMode = mode;
+  saveState();
+  render();
 }
 
 function updateSecMeter(val) {
@@ -741,6 +811,40 @@ function handleAuth(e) {
   addTermLog(`Authenticated user: ${email}`, 'success');
   showToast('Session Token Generated!');
   render();
+}
+
+function handleSendOtp(e) {
+  e.preventDefault();
+  const email = document.getElementById('reset-email').value;
+  if (!email) return;
+
+  state.resetEmail = email;
+  state.generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+  state.authMode = 'otp';
+  saveState();
+
+  playBeep('success');
+  addTermLog(`OTP Code (${state.generatedOtp}) sent to Gmail: ${email}`, 'info');
+  alert(`📧 Gmail OTP Sent!\n\nDestination: ${email}\n\nYour 6-digit verification code is: ${state.generatedOtp}`);
+  showToast(`OTP Code dispatched to ${email}`);
+  render();
+}
+
+function handleResetPassword(e) {
+  e.preventDefault();
+  const userOtp = document.getElementById('otp-input').value;
+  if (userOtp === state.generatedOtp) {
+    playBeep('success');
+    addTermLog(`Password reset successful for ${state.resetEmail}`, 'success');
+    alert('🔑 Password successfully reset! You may now sign in using your new credentials.');
+    state.authMode = 'login';
+    saveState();
+    render();
+  } else {
+    playBeep('error');
+    addTermLog(`Invalid OTP verification attempt for ${state.resetEmail}`, 'error');
+    alert('❌ Invalid OTP code. Please check your code and try again.');
+  }
 }
 
 /* ---------------- TRACK SELECTION SCREEN ---------------- */
@@ -885,7 +989,6 @@ function renderDashboard() {
   const level = 1 + Math.floor(xp / 300);
   const xpProgress = xp % 300;
 
-  // STRICT 100% COMPLETION CHECK
   const isCourseComplete = completedCount === total;
 
   setTimeout(drawRadarChart, 100);
@@ -1133,6 +1236,19 @@ function closeCertModal() {
   document.getElementById('cert-modal').style.display = 'none';
 }
 
+function downloadCertPDF() {
+  const element = document.getElementById('cert-printable');
+  const userName = state.certName || 'Student';
+  const opt = {
+    margin:       0.3,
+    filename:     `SkillBridge_Certificate_${userName.replace(/\s+/g, '_')}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+  };
+  html2pdf().set(opt).from(element).save();
+}
+
 function toggleExpand(skill) {
   state.expandedNode = state.expandedNode === skill ? null : skill;
   saveState();
@@ -1157,7 +1273,7 @@ function markIncomplete(skill) {
   render();
 }
 
-/* ---------------- ACCURATE INTELLIGENT AI MENTOR ---------------- */
+/* ---------------- ACCURATE INTELLIGENT AI ASSISTANT ---------------- */
 function toggleAiBot() {
   const chat = document.getElementById('ai-chat');
   chat.style.display = chat.style.display === 'none' ? 'flex' : 'none';
@@ -1176,52 +1292,70 @@ function sendAiMessage() {
     const q = text.toLowerCase();
     let reply = "";
 
-    // Exact Query Match Engine (Handles Full Forms, Syntax & Explanations)
     if (q.includes('full form') || q.includes('what is llm') || q.includes('llm stand for')) {
       reply = `<strong>Large Language Model (LLM)</strong><br/><br/>
-      An <strong>LLM</strong> is a type of artificial intelligence model trained on vast amounts of text data using deep learning architectures (primarily <em>Transformers</em>) to process and generate human-like language.
+      An <strong>LLM</strong> is a deep learning architecture (primarily based on <em>Transformers</em>) trained on massive text corpora to process and generate human-like language.
       <ul>
-        <li><strong>Examples:</strong> GPT-4, Claude 3.5, Llama 3, Gemini.</li>
-        <li><strong>Core Tech:</strong> Attention mechanisms, Tokenization, Vector Embeddings.</li>
+        <li><strong>Examples:</strong> GPT-4, Gemini, Claude 3.5, Llama 3.</li>
+        <li><strong>Key Mechanics:</strong> Self-Attention, Tokenization, High-Dimensional Vector Embeddings.</li>
+      </ul>`;
+    } else if (q.includes('rag') || q.includes('retrieval augmented')) {
+      reply = `<strong>Retrieval-Augmented Generation (RAG)</strong><br/><br/>
+      RAG injects verified external document chunks from a <strong>Vector Database</strong> directly into the LLM prompt context to guarantee factual precision and prevent hallucinations.
+      <ul>
+        <li><strong>Pipeline:</strong> Chunking → Embeddings → Cosine Similarity Search → Context Ingestion.</li>
       </ul>`;
     } else if (q.includes('react') || q.includes('hook') || q.includes('state')) {
-      reply = `<strong>React Hooks & State Architecture:</strong><br/><br/>
-      React manages user interfaces declaratively using an in-memory Virtual DOM.
+      reply = `<strong>React Virtual DOM & State Architecture:</strong><br/><br/>
+      React updates user interfaces declaratively by performing Virtual DOM reconciliation.
       <ul>
-        <li><code>useState</code>: Manages local component state.</li>
-        <li><code>useEffect</code>: Handles side effects like API data fetching.</li>
+        <li><code>useState</code>: Manages component state.</li>
+        <li><code>useEffect</code>: Handles async network requests or side effects.</li>
       </ul>
-      <pre>const [data, setData] = useState(null);</pre>`;
+      <code>const [state, setState] = useState(initialVal);</code>`;
     } else if (q.includes('node') || q.includes('express') || q.includes('backend') || q.includes('api')) {
       reply = `<strong>Node.js & Express REST APIs:</strong><br/><br/>
-      Node handles concurrent connections asynchronously using libuv and the V8 Event Loop.
+      Node handles thousands of concurrent requests asynchronously via libuv's Event Loop.
       <ul>
-        <li><strong>Middleware:</strong> Intercepts and parses requests before reaching route handlers.</li>
-        <li><strong>Async/Await:</strong> Use try/catch blocks around database queries.</li>
+        <li><strong>Middleware:</strong> Intercepts and parses incoming HTTP payloads.</li>
+        <li><strong>JWT Bearer Auth:</strong> Guarantees stateless authentication headers.</li>
       </ul>`;
     } else if (q.includes('python') || q.includes('pytorch') || q.includes('machine learning')) {
       reply = `<strong>Python & AI Engineering:</strong><br/><br/>
-      Python is the primary language for Artificial Intelligence and Data Science.
+      Python serves as the dominant language for Machine Learning and AI workflows.
       <ul>
-        <li><strong>PyTorch:</strong> Neural network acceleration via GPU tensors.</li>
-        <li><strong>RAG Pipelines:</strong> Connects LLMs to Vector DBs for factual contextual retrieval.</li>
+        <li><strong>PyTorch:</strong> Provides dynamic computational graphs with GPU acceleration.</li>
+        <li><strong>Scikit-Learn:</strong> Powers classical classification algorithms and loss optimization.</li>
       </ul>`;
     } else if (q.includes('sql') || q.includes('database') || q.includes('postgres')) {
-      reply = `<strong>SQL Relational Databases:</strong><br/><br/>
-      SQL systems ensure ACID transaction guarantees.
+      reply = `<strong>SQL Relational Databases & Indexing:</strong><br/><br/>
+      SQL databases guarantee ACID compliance for transactions.
       <ul>
-        <li><strong>B-Tree Indexes:</strong> Speeds up <code>SELECT</code> queries.</li>
-        <li><strong>Parameterized Queries:</strong> Protects applications from SQL injection attacks.</li>
+        <li><strong>B-Tree Indexes:</strong> Reduces lookup times from O(N) to O(log N).</li>
+        <li><strong>Parameterized Queries:</strong> Neutralizes SQL Injection (SQLi) vulnerabilities.</li>
+      </ul>`;
+    } else if (q.includes('docker') || q.includes('kubernetes') || q.includes('devops')) {
+      reply = `<strong>Containerization & Cloud Infrastructure:</strong><br/><br/>
+      Docker creates isolated, reproducible application containers.
+      <ul>
+        <li><strong>Kubernetes:</strong> Automates container scaling, self-healing, and load balancing across nodes.</li>
+      </ul>`;
+    } else if (q.includes('viva') || q.includes('exam') || q.includes('quiz') || q.includes('test')) {
+      reply = `<strong>AI Viva Preparation Tips:</strong><br/><br/>
+      To pass your track vivas with 100% scores:
+      <ul>
+        <li>Review the <strong>Core Concepts</strong> and <strong>Execution Mechanics</strong> inside each expanded skill node.</li>
+        <li>Examine the code snippets and architecture diagrams before choosing your MCQ answers.</li>
       </ul>`;
     } else {
-      reply = `<strong>AI Mentor Answer:</strong><br/><br/>
-      Thank you for asking: <em>"${text}"</em>.<br/><br/>
-      To solve or study this effectively:
+      reply = `<strong>Smart AI Technical Assistant:</strong><br/><br/>
+      I have processed your query regarding: <em>"${text}"</em>.<br/><br/>
+      <strong>Key Recommendation:</strong>
       <ul>
-        <li>Check the official documentation links in your expanded module.</li>
-        <li>Break down the code logic into smaller modular functions.</li>
+        <li>Expand your active track modules to inspect system diagrams and official documentation.</li>
+        <li>Break down your task into smaller, modular functions and test each block incrementally.</li>
       </ul>
-      Feel free to ask me for code examples, debugging tips, or conceptual explanations!`;
+      Feel free to ask me for specific code snippets, debugging assistance, or architecture designs!`;
     }
 
     container.innerHTML += `<div class="msg-ai">${reply}</div>`;
